@@ -27,7 +27,7 @@ public class MotorControlActions {
         @Override
         public boolean run(@NonNull TelemetryPacket t) {
             boolean finished = true;
-            for (Action action : actions) finished = finished & action.run(t);
+            for (Action action : actions) finished = finished && action.run(t);
             return finished;
         }
 
@@ -139,6 +139,7 @@ public class MotorControlActions {
 
                 @Override
                 public void preview(@NonNull Canvas canvas) {
+
 
                 }
             };

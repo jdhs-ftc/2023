@@ -73,21 +73,21 @@ public class MotorControl {
         switch (getCurrentMode()) {
             case GRAB:
                 slide.setTargetPosition(0);
-                arm.setTargetPosition(0);
+                arm.moveDown();
                 break;
             case IDLE:
-                arm.setTargetPosition(0);
-                slide.setTargetPosition(30);
+                arm.moveDown();
+                slide.setTargetPosition(70);
                 break;
             case PLACE:
-                arm.setTargetPosition(72); // TODO: TUNE
+                arm.setTargetPosition(60); // TODO: TUNE
                 slide.setTargetPosition(1100); // TODO: TUNE
                 break;
 
         } }
         oldMode = getCurrentMode();
         slide.update();
-        arm.armUpdate();
+        arm.update();
     }
 
 
@@ -122,11 +122,11 @@ public class MotorControl {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motor.setCurrentAlert(4, CurrentUnit.AMPS);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
         /**
-         * This stops the arm, sets the state to down, and resets the encoder.
+         * This stops the arm and resets the encoder.
          */
         public void reset() {
             motor.setPower(0);
@@ -140,15 +140,18 @@ public class MotorControl {
         /**
          * This updates the arm motor to match the current state. This should be run in a loop.
          */
-        public void armUpdate() {
-            double armError = targetPosition - motor.getCurrentPosition();
+        public void update() {
+            //double armError = targetPosition - motor.getCurrentPosition();
             motor.setTargetPosition((int) targetPosition);
-            motor.setTargetPositionTolerance(1);
+            motor.setTargetPositionTolerance(0);
+            motor.setPower(1);
+            /*
             if (armError > 0) {
                 motor.setPower(0.8);
             } else {
                 motor.setPower(-0.5);
             }
+             */
             if (!motor.isOverCurrent()) {
                 motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             } else {
@@ -158,7 +161,7 @@ public class MotorControl {
         }
 
         public void moveOut() {
-            setTargetPosition(72);
+            setTargetPosition(-72);
         }
 
         public void moveDown() {
@@ -169,6 +172,8 @@ public class MotorControl {
         public boolean isBusy() {
             return motor.isBusy();
         }
+        public boolean closeEnough() {
+            return Math.abs(motor.getCurrentPosition() - targetPosition) < 2; }
     }
 
     /**
@@ -239,6 +244,9 @@ public class MotorControl {
         public boolean isBusy() {
             return motor.isBusy();
         }
+
+        public boolean closeEnough() {
+            return Math.abs(motor.getCurrentPosition() - targetPosition) < 20; }
     }
 
     /**
