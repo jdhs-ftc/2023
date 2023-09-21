@@ -144,7 +144,7 @@ public class MotorControl {
             //double armError = targetPosition - motor.getCurrentPosition();
             motor.setTargetPosition((int) targetPosition);
             motor.setTargetPositionTolerance(0);
-            motor.setPower(1);
+
             /*
             if (armError > 0) {
                 motor.setPower(0.8);
@@ -158,6 +158,7 @@ public class MotorControl {
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
             }
+            motor.setPower(1);
         }
 
         public void moveOut() {
