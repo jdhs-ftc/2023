@@ -10,8 +10,10 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
+import org.firstinspires.ftc.teamcode.motor.PIDFController;
 
 import java.util.List;
 
@@ -28,8 +30,12 @@ public class TeleopFieldCentric extends LinearOpMode {
     LynxModule CONTROL_HUB;
     LynxModule EXPANSION_HUB;
     boolean fieldCentric = true;
-    boolean leftClawHoldingPixel = false;
-    boolean oldLeftBumper;
+    boolean lowerClawHoldingPixel = false;
+    boolean upperClawHoldingPixel = false;
+    Gamepad currentGamepad1 = new Gamepad();
+    Gamepad currentGamepad2 = new Gamepad();
+    Gamepad previousGamepad1 = new Gamepad();
+    Gamepad previousGamepad2 = new Gamepad();
 
 
     @Override
@@ -58,7 +64,9 @@ public class TeleopFieldCentric extends LinearOpMode {
         // Motor Init
         MotorControl motorControl = new MotorControl(hardwareMap);
 
-        oldLeftBumper = gamepad2.left_bumper;
+        motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+
+
 
 
         waitForStart();
@@ -71,6 +79,12 @@ public class TeleopFieldCentric extends LinearOpMode {
         while (opModeIsActive() && !isStopRequested()) {
             double prevTime = System.nanoTime(); // set to current time
 
+            previousGamepad1.copy(currentGamepad1);
+            previousGamepad2.copy(currentGamepad2);
+
+            currentGamepad1.copy(gamepad1);
+            currentGamepad2.copy(gamepad2);
+
             // Update the speed
             if (gamepad1.left_bumper) {
                 speed = .35;
@@ -80,20 +94,24 @@ public class TeleopFieldCentric extends LinearOpMode {
                 speed = .8;
             }
 
-            if (gamepad1.dpad_left) {
+            if (gamepad1.dpad_left && !previousGamepad1.dpad_left) {
                 if (!PoseStorage.isBlue) {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(90.0));
                 } else {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(-90.0));
                 }
             }
-            if (gamepad1.options) {
-                if (gamepad1.dpad_up) {
+            if (gamepad1.share) {
+                if (gamepad1.dpad_up && !previousGamepad1.dpad_up) {
                     fieldCentric = !fieldCentric;
+                    if (fieldCentric) { gamepad1.rumbleBlips(2);}
+                    else { gamepad1.rumbleBlips(1);}
                 }
 
-                if (gamepad1.dpad_left) {
+                if (gamepad1.dpad_left && !previousGamepad1.dpad_left) {
                     PoseStorage.isBlue = !PoseStorage.isBlue;
+                    if (PoseStorage.isBlue) { gamepad1.rumbleBlips(1);}
+                    else { gamepad1.rumbleBlips(2);}
                 }
             }
 
@@ -103,27 +121,28 @@ public class TeleopFieldCentric extends LinearOpMode {
                     -gamepad1.left_stick_y * speed,
                     -gamepad1.left_stick_x * speed
             );
-            if (gamepad2.right_bumper) {
-                input = input.plus(new Vector2d(
-                        0,
-                        -gamepad2.left_stick_x * 0.1
-                ));
-            }
+
             //Pose2d poseEstimate = drive.pose;
             double rotationAmount = -drive.pose.heading.log(); // Rotation2d.log() makes it into a double in radians.
             if (fieldCentric) {
                 if (PoseStorage.isBlue) {
                     //input = drive.pose.heading.inverse().plus(90).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
-                    rotationAmount = rotationAmount + Math.toRadians(90);
+                    rotationAmount = rotationAmount - Math.toRadians(90);
                 } else {
                     //input = drive.pose.heading.inverse().plus(-90).times(new Vector2d(input.x, -input.y)); // magic courtesy of
-                    rotationAmount = rotationAmount - Math.toRadians(90);
+                    rotationAmount = rotationAmount + Math.toRadians(90);
 
                 }
                 input = new Vector2d(input.x * Math.cos(rotationAmount) - input.y * Math.sin(rotationAmount), input.x * Math.sin(rotationAmount) + input.y * Math.cos(rotationAmount));
                 //input = drive.pose.heading.inverse().plus(90).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
             }
             Vector2d controllerHeading = new Vector2d(-gamepad1.right_stick_y, -gamepad1.right_stick_x);
+            if (gamepad2.right_bumper) {
+                input = input.plus(new Vector2d(
+                        0,
+                        -gamepad2.right_stick_x * 0.25
+                ));
+            }
 
             if (controllerHeading.minus(new Vector2d(0.0,0.0)).norm() < 0.7) {
                 drive.setDrivePowers(
@@ -182,56 +201,98 @@ public class TeleopFieldCentric extends LinearOpMode {
             // CLAW
 
             // grab with claw if holding pixel
-            if (leftClawHoldingPixel) {
-                motorControl.claw.setPower(1);
+            /*
+            if (lowerClawHoldingPixel) {
+                motorControl.lowerClaw.setPower(0.5);
             } else {
-                motorControl.claw.setPower(0);
+                motorControl.lowerClaw.setPower(-0.25);
+            }
+
+            if (upperClawHoldingPixel) {
+                motorControl.upperClaw.setPower(0.5);
+            } else {
+                motorControl.upperClaw.setPower(-0.25);
             }
 
             // pickup pixel
-            if (gamepad2.left_bumper && !leftClawHoldingPixel && !oldLeftBumper) {
+            if (gamepad2.left_bumper && !lowerClawHoldingPixel && !previousGamepad2.left_bumper) {
                 motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
-                if (motorControl.slide.closeEnough()) { //...wait until we get down far enough, because this will loop
-                    leftClawHoldingPixel = true;
-                }
-            } else if (!gamepad2.left_bumper && leftClawHoldingPixel && motorControl.getCurrentMode() == MotorControl.combinedMode.GRAB){ // if driver releases button
+
+            } else if (!gamepad2.left_bumper && previousGamepad2.left_bumper && motorControl.getCurrentMode() == MotorControl.combinedMode.GRAB){ // if driver releases button
                 motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+                lowerClawHoldingPixel = true;
             }
 
             // place pixel
-            if (gamepad2.left_bumper && leftClawHoldingPixel && motorControl.getCurrentMode() == MotorControl.combinedMode.PLACE) {
-                leftClawHoldingPixel = false; // TODO: ask if more wanted here
+            if (gamepad2.left_bumper && lowerClawHoldingPixel && motorControl.getCurrentMode() == MotorControl.combinedMode.PLACE) {
+                lowerClawHoldingPixel = false; // TODO: ask if more wanted here
             }
 
-            if (gamepad2.right_bumper) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.PLACE);
+            // pickup pixel
+            if (gamepad2.right_bumper && !upperClawHoldingPixel && !previousGamepad2.right_bumper) {
+                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+
+            } else if (gamepad2.right_bumper && !previousGamepad2.right_bumper && motorControl.getCurrentMode() == MotorControl.combinedMode.GRAB){ // if driver releases button
+                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+                upperClawHoldingPixel = true;
+            }
+
+            // place pixel
+            if (gamepad2.right_bumper && upperClawHoldingPixel && motorControl.getCurrentMode() == MotorControl.combinedMode.PLACE) {
+                upperClawHoldingPixel = false; // TODO: ask if more wanted here
+            }
+            if (gamepad2.dpad_down) {
+                // toggle clawHoldingPixel
+                lowerClawHoldingPixel = false;
             }
 
             if (gamepad2.dpad_up) {
-                // toggle clawHoldingPixel
-                leftClawHoldingPixel = false;
+                upperClawHoldingPixel = false;
+            }
+             */
+
+            motorControl.lowerClaw.setPower(gamepad2.left_trigger - 0.6);
+            motorControl.upperClaw.setPower(gamepad2.right_trigger);
+
+
+
+            if (gamepad2.right_bumper && !previousGamepad2.right_bumper) { // if bumper just pressed
+                motorControl.setCurrentMode(MotorControl.combinedMode.PLACE);
+            } else if (!gamepad2.right_bumper && previousGamepad2.right_bumper) {
+                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE); // if bumper just released
+            }
+            if (gamepad2.left_bumper && !previousGamepad2.left_bumper) { // if bumper just pressed
+                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+            } else if (!gamepad2.left_bumper && previousGamepad2.left_bumper) {
+                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE); // if bumper just released
             }
 
 
+
+
             // Slide
-            motorControl.slide.setTargetPosition(motorControl.slide.getTargetPosition() + (-gamepad2.left_stick_y * 40));
+            if (motorControl.slide.getTargetPosition() >= 1000 && -gamepad2.left_stick_y > 0) {
+                motorControl.slide.setTargetPosition(999);
+
+            } else if (motorControl.slide.getTargetPosition() <= -60 && -gamepad2.left_stick_y < 0) {
+                motorControl.slide.setTargetPosition(-60);
+
+            } else { motorControl.slide.setTargetPosition(motorControl.slide.getTargetPosition() + (-gamepad2.left_stick_y * 40));}
 
 
             // Combined Presets
-            if (gamepad2.y || gamepad1.y) {
+            if (gamepad2.y) {
                 motorControl.setCurrentMode(MotorControl.combinedMode.PLACE);
             }
             if (gamepad2.b || gamepad1.b) {
                 motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
             }
             if (gamepad2.a || gamepad1.a) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
             }
-            if (gamepad2.x || gamepad1.x) {
-                motorControl.arm.moveOut();
-                motorControl.slide.setTargetPosition(400);
-            }
-            if (gamepad2.dpad_right && gamepad2.dpad_left) {
+
+
+            if (gamepad2.dpad_right && gamepad2.dpad_up) {
                 motorControl.reset();
             }
 
@@ -241,6 +302,10 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             // TODO: remove
             //gamepad1.rumble(CONTROL_HUB.getCurrent(CurrentUnit.AMPS),EXPANSION_HUB.getCurrent(CurrentUnit.AMPS),Gamepad.RUMBLE_DURATION_CONTINUOUS);
+            if (motorControl.isOverCurrent()) {
+                gamepad1.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+                gamepad2.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+            }
             drive.updatePoseEstimate();
             motorControl.update();
             // Timing
@@ -251,7 +316,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
             FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
-            oldLeftBumper = gamepad2.left_bumper;
+
 
             // Print pose to telemetry
             telemetry.addData("x", drive.pose.position.x);
@@ -264,9 +329,12 @@ public class TeleopFieldCentric extends LinearOpMode {
             telemetry.addData("armPosition", motorControl.arm.motor.getCurrentPosition());
             telemetry.addData("slideTarget", motorControl.slide.getTargetPosition());
             telemetry.addData("slidePosition", motorControl.slide.motor.getCurrentPosition());
-            telemetry.addData("clawPower", motorControl.claw.servo.getPower());
-            telemetry.addData("leftClawHoldingPixel", leftClawHoldingPixel);
+            telemetry.addData("clawPower", motorControl.lowerClaw.servo.getPosition());
+            telemetry.addData("leftClawHoldingPixel", lowerClawHoldingPixel);
+            telemetry.addData("upperClawPower", motorControl.upperClaw.servo.getPosition());
+            telemetry.addData("upperClawHoldingPixel", upperClawHoldingPixel);
             telemetry.addData("currentMode", motorControl.getCurrentMode());
+            telemetry.addData("armOverCurrent", motorControl.arm.motor.isOverCurrent());
             telemetry.update();
         }
     }

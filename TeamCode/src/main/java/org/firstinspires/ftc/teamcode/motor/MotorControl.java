@@ -3,10 +3,11 @@ package org.firstinspires.ftc.teamcode.motor;
 
 import androidx.annotation.NonNull;
 
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
@@ -15,7 +16,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * TODO: UPDATE
  */
 public class MotorControl {
-    public Claw claw;
+    public LowerClaw lowerClaw;
+    public UpperClaw upperClaw;
     public Slide slide;
     public Arm arm;
 
@@ -58,12 +60,11 @@ public class MotorControl {
     public MotorControl(@NonNull HardwareMap hardwareMap) {
         arm = new Arm(hardwareMap);
         slide = new Slide(hardwareMap);
-        claw = new Claw(hardwareMap);
+        lowerClaw = new LowerClaw(hardwareMap);
+        upperClaw = new UpperClaw(hardwareMap);
 
         setCurrentMode(combinedMode.GRAB);
     }
-
-
 
     /**
      * This class updates the arm and slide motors to match the current state.
@@ -81,7 +82,7 @@ public class MotorControl {
                 break;
             case PLACE:
                 arm.setTargetPosition(60); // TODO: TUNE
-                slide.setTargetPosition(1100); // TODO: TUNE
+                slide.setTargetPosition(750); // TODO: TUNE
                 break;
 
         } }
@@ -89,7 +90,6 @@ public class MotorControl {
         slide.update();
         arm.update();
     }
-
 
 
     /**
@@ -100,11 +100,27 @@ public class MotorControl {
         slide.reset();
     }
 
+    public boolean isBusy() {
+        return arm.isBusy() || slide.isBusy();
+    }
+
+    public boolean closeEnough() {
+        return arm.closeEnough() && slide.closeEnough();
+    }
+
+    public boolean isOverCurrent() {
+        return arm.isOverCurrent() || slide.isOverCurrent();
+    }
+
     /**
      * This class controls the arm motor.
      */
+    @Config
     public static class Arm {
         public DcMotorEx motor;
+
+        public static PIDFController.PIDCoefficients ARM_PID = new PIDFController.PIDCoefficients(0.05, 0.0, 0.01);
+        private final PIDFController armController = new PIDFController(ARM_PID);
 
         public double getTargetPosition() {
             return targetPosition;
@@ -120,9 +136,11 @@ public class MotorControl {
             targetPosition = 0;
             motor = hardwareMap.get(DcMotorEx.class, "arm");
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            motor.setCurrentAlert(4, CurrentUnit.AMPS);
+            motor.setCurrentAlert(4.4, CurrentUnit.AMPS);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            armController.setOutputBounds(-0.3,0.5);
+            //motor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(10, 3, 0, 0));
         }
 
         /**
@@ -132,7 +150,7 @@ public class MotorControl {
             motor.setPower(0);
             targetPosition = 0;
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
 
@@ -141,28 +159,31 @@ public class MotorControl {
          * This updates the arm motor to match the current state. This should be run in a loop.
          */
         public void update() {
-            //double armError = targetPosition - motor.getCurrentPosition();
-            motor.setTargetPosition((int) targetPosition);
-            motor.setTargetPositionTolerance(0);
+            //double armError = Math.abs(targetPosition - motor.getCurrentPosition());
+            armController.targetPosition = targetPosition;
+
 
             /*
             if (armError > 0) {
-                motor.setPower(0.8);
+                motor.setPower(1);
             } else {
-                motor.setPower(-0.5);
+                motor.setPower(-1);
             }
+
              */
+
             if (!motor.isOverCurrent()) {
-                motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                motor.setPower(armController.update(motor.getCurrentPosition()) + 0.3);
             } else {
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                motor.setPower(0);
 
             }
-            motor.setPower(1);
+            //motor.setPower(1);
         }
 
         public void moveOut() {
-            setTargetPosition(-72);
+            setTargetPosition(-24);
         }
 
         public void moveDown() {
@@ -175,6 +196,10 @@ public class MotorControl {
         }
         public boolean closeEnough() {
             return Math.abs(motor.getCurrentPosition() - targetPosition) < 2; }
+
+        public boolean isOverCurrent() {
+            return motor.isOverCurrent();
+        }
     }
 
     /**
@@ -248,21 +273,25 @@ public class MotorControl {
 
         public boolean closeEnough() {
             return Math.abs(motor.getCurrentPosition() - targetPosition) < 20; }
+
+        public boolean isOverCurrent() {
+            return motor.isOverCurrent();
+        }
     }
 
     /**
      * This class controls the claw.
      */
-    public static class Claw {
-        public CRServo servo;
+    public static class LowerClaw {
+        public Servo servo;
 
         /**
          * This initializes the claw servo. This should be run before any other methods.
          * @param hardwareMap The hardware map to use to get the servo.
          */
-        public Claw(HardwareMap hardwareMap) {
-            servo = hardwareMap.get(CRServo.class, "claw");
-            servo.setPower(0.8);
+        public LowerClaw(HardwareMap hardwareMap) {
+            servo = hardwareMap.get(Servo.class, "claw");
+            servo.setPosition(0);
         }
 
         /**
@@ -270,7 +299,29 @@ public class MotorControl {
          * @param power The power to set the claw servo to.
          */
         public void setPower(double power) {
-            servo.setPower(power);
+            servo.setPosition(power);
         }
     }
+    public static class UpperClaw {
+        public Servo servo;
+
+        /**
+         * This initializes the claw servo. This should be run before any other methods.
+         * @param hardwareMap The hardware map to use to get the servo.
+         */
+        public UpperClaw(HardwareMap hardwareMap) {
+            servo = hardwareMap.get(Servo.class, "upperClaw");
+            servo.setPosition(0);
+        }
+
+        /**
+         * This opens or closes the claw.
+         * @param power The power to set the claw servo to.
+         */
+        public void setPower(double power) {
+            servo.setPosition(power);
+        }
+
+    }
+
 }

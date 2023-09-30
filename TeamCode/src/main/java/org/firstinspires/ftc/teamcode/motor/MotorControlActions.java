@@ -10,11 +10,15 @@ public class MotorControlActions {
     private final MotorControl motorControl;
     public final Slide slide;
     public final Arm arm;
+    public final LowerClaw lowerClaw;
+    public final UpperClaw upperClaw;
 
     public MotorControlActions(MotorControl motorControl) {
         this.motorControl = motorControl;
         this.slide = new Slide();
         this.arm = new Arm();
+        this.lowerClaw = new LowerClaw();
+        this.upperClaw = new UpperClaw();
     }
 
     public static class RaceParallelCommand implements Action {
@@ -46,7 +50,7 @@ public class MotorControlActions {
             @Override
             public boolean run(@NonNull TelemetryPacket t) {
                 motorControl.setCurrentMode(newMode);
-                return true;
+                return false;
             }
 
             @Override
@@ -60,7 +64,7 @@ public class MotorControlActions {
             @Override
             public boolean run(@NonNull TelemetryPacket t) {
                 motorControl.reset();
-                return true;
+                return false;
             }
 
             @Override
@@ -89,7 +93,7 @@ public class MotorControlActions {
             @Override
             public boolean run(@NonNull TelemetryPacket t) {
                 motorControl.update();
-                return true;
+                return false;
             }
 
             @Override
@@ -105,7 +109,7 @@ public class MotorControlActions {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.arm.reset();
-                    return true;
+                    return false;
                 }
 
                 @Override
@@ -120,7 +124,7 @@ public class MotorControlActions {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.arm.setTargetPosition(position);
-                    return true;
+                    return false;
                 }
 
                 @Override
@@ -151,7 +155,7 @@ public class MotorControlActions {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.slide.reset();
-                    return true;
+                    return false;
                 }
 
                 @Override
@@ -166,7 +170,7 @@ public class MotorControlActions {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.slide.setTargetPosition(position);
-                    return true;
+                    return false;
                 }
 
                 @Override
@@ -180,6 +184,71 @@ public class MotorControlActions {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     return motorControl.slide.isBusy();
+                }
+
+                @Override
+                public void preview(@NonNull Canvas canvas) {
+
+                }
+            };
+        }
+    }
+
+    public class LowerClaw {
+        public Action grab() {
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket t) {
+                    motorControl.lowerClaw.setPower(1);
+                    return false;
+                }
+
+                @Override
+                public void preview(@NonNull Canvas canvas) {
+
+                }
+            };
+        }
+
+        // release
+        public Action release() {
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket t) {
+                    motorControl.lowerClaw.setPower(0);
+                    return false;
+                }
+
+                @Override
+                public void preview(@NonNull Canvas canvas) {
+
+                }
+            };
+        }
+    }
+    public class UpperClaw {
+        public Action grab() {
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket t) {
+                    motorControl.upperClaw.setPower(1);
+                    return false;
+                }
+
+                @Override
+                public void preview(@NonNull Canvas canvas) {
+
+                }
+            };
+        }
+
+        // release
+        public Action release() {
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket t) {
+                    motorControl.upperClaw.setPower(0);
+                    return false;
                 }
 
                 @Override

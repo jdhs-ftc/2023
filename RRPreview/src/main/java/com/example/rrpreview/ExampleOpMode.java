@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.github.j5155.PreviewMecanumDrive;
@@ -35,12 +36,26 @@ public class ExampleOpMode {
         PreviewMecanumDrive drive = new PreviewMecanumDrive(IN_PER_TICK, LATERAL_IN_PER_TICK, TRACK_WIDTH_TICKS, LATERAL_MULTIPLIER,
                 MAX_WHEEL_VEL, MIN_PROFILE_ACCEL, MAX_PROFILE_ACCEL, MAX_ANG_VEL, MAX_ANG_ACCEL);
 
-        Pose2d startPose = new Pose2d(0,0,0); // TODO: Update this to reflect your autonomous start position
+        Pose2d startPose = new Pose2d(12,63,Math.toRadians(-90)); // TODO: Update this to reflect your autonomous start position
         TrajectoryActionBuilder trajBuild =
                 drive.actionBuilder(startPose) // TODO: Copy your autonomous here
-                        .splineTo(new Vector2d(0, 30), Math.PI / 2)
-                        .splineTo(new Vector2d(0, 60), Math.PI)
-                        .strafeTo(new Vector2d(48,48));
+                        .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
+                        .strafeToConstantHeading(new Vector2d(15,35))
+                        .waitSeconds(1)
+                        // place pixel
+                        // .stopAndAdd()
+                        .strafeTo(new Vector2d(12, 35))
+                        // start raising?
+                        .strafeTo(new Vector2d(12, 50))
+                        .splineTo(new Vector2d(28, 55), Math.toRadians(-15))
+                        .splineToSplineHeading(new Pose2d(48, 42,Math.toRadians(0)), Math.toRadians(0))
+                        .strafeTo(new Vector2d(50, 42))
+                        .waitSeconds(1)
+                        // place pixel
+                        // .stopAndAdd()
+                        .strafeTo(new Vector2d(48, 42))
+                        .splineTo(new Vector2d(60,60), Math.toRadians(0))
+                ;
         // Make sure to remove the .build(), it is not needed here
 
         Action traj = trajBuild.build();
@@ -48,7 +63,8 @@ public class ExampleOpMode {
         PreviewMecanumDrive.drawRobot(c, startPose);
 
         while(true) {
-            TelemetryPacket p = new TelemetryPacket();
+            TelemetryPacket p = new TelemetryPacket(false);
+            p.fieldOverlay().getOperations().addAll(CENTERSTAGE_FIELD.getOperations());
             if (!traj.run(p)) traj = trajBuild.build();
             p.fieldOverlay().getOperations().addAll(c.getOperations());
             dash.core.sendTelemetryPacket(p);
@@ -62,4 +78,12 @@ public class ExampleOpMode {
 
 
     }
+    private static final Canvas CENTERSTAGE_FIELD = new Canvas();
+    static {
+        CENTERSTAGE_FIELD.setAlpha(0.50);
+        CENTERSTAGE_FIELD.drawImage("/centerstage.png", 0, 0, 144, 144);
+        CENTERSTAGE_FIELD.setAlpha(1.0);
+        CENTERSTAGE_FIELD.drawGrid(0, 0, 144, 144, 7, 7);
+    }
+
 }
