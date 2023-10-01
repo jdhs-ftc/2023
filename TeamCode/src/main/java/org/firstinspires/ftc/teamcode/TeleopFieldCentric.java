@@ -251,7 +251,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
              */
 
-            motorControl.lowerClaw.setPower(gamepad2.left_trigger - 0.6);
+            motorControl.lowerClaw.setPower(gamepad2.left_trigger);
             motorControl.upperClaw.setPower(gamepad2.right_trigger);
 
 
