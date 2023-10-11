@@ -78,7 +78,7 @@ public class MotorControlActions {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket t) {
-                return motorControl.arm.isBusy() || motorControl.slide.isBusy();
+                return motorControl.closeEnough();
             }
 
             @Override
@@ -93,7 +93,7 @@ public class MotorControlActions {
             @Override
             public boolean run(@NonNull TelemetryPacket t) {
                 motorControl.update();
-                return false;
+                return true;
             }
 
             @Override
@@ -138,7 +138,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    return motorControl.arm.isBusy();
+                    return motorControl.arm.closeEnough();
                 }
 
                 @Override
@@ -183,7 +183,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    return motorControl.slide.isBusy();
+                    return motorControl.slide.closeEnough();
                 }
 
                 @Override

@@ -25,6 +25,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -79,64 +81,75 @@ public class LeftBlueVisionAuto extends ActionOpMode
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, Math.toRadians(-90)));
+        drive.pose = new Pose2d(12,63, Math.toRadians(-90));
         Action trajLeft =
                 drive.actionBuilder(drive.pose)
                         .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
                         .strafeToConstantHeading(new Vector2d(15,35))
-                        .stopAndAdd(motorControlActions.lowerClaw.release()) // place first pixel
-                        .waitSeconds(0.25)
+                        .stopAndAdd(new SequentialAction(
+                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                new SleepAction(0.25),
+                                motorControlActions.lowerClaw.release()
+                        ))
                         .strafeTo(new Vector2d(12, 35))
+                        /*
                         .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.PLACE)) // raise arm/slide to prepare to place pixel
                         .strafeTo(new Vector2d(12, 50))
                         .strafeTo(new Vector2d(15,50))
                         .splineToSplineHeading(new Pose2d(48, 42,Math.toRadians(0)), Math.toRadians(0))
                         .strafeTo(new Vector2d(50, 42))
-                        .waitSeconds(1)
-                        .endTrajectory()
+                        .waitSeconds(0.5)
                         .stopAndAdd(motorControlActions.upperClaw.release()) // place pixel
                         .strafeTo(new Vector2d(48, 42))
+
+                         */
                         .splineTo(new Vector2d(60,60), Math.toRadians(0))
                         .build();
+        /*
         Action trajCenter =
                 drive.actionBuilder(drive.pose)
                         .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(270)))
                         .strafeToConstantHeading(new Vector2d(12,32))
-                        .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB))
-                        .waitSeconds(0.25)
-                        .stopAndAdd(motorControlActions.lowerClaw.release()) // place first pixel
-                        .endTrajectory()
+                        .stopAndAdd(new SequentialAction(
+                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                new SleepAction(0.25),
+                                motorControlActions.lowerClaw.release()
+                        ))
                         .strafeTo(new Vector2d(12, 35))
                         .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.PLACE)) // raise arm/slide to prepare to place pixel
                         .strafeTo(new Vector2d(12, 50))
                         .strafeTo(new Vector2d(15,50))
                         .splineToSplineHeading(new Pose2d(48, 36,Math.toRadians(0)), Math.toRadians(0))
                         .strafeTo(new Vector2d(50, 36))
-                        .waitSeconds(1)
-                        .endTrajectory()
+                        //.waitSeconds(0.5)
                         .stopAndAdd(motorControlActions.upperClaw.release()) // place pixel
                         .strafeTo(new Vector2d(48, 36))
                         .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
                         .build();
+
+
         Action trajRight =
                 drive.actionBuilder(drive.pose)
                         .strafeToSplineHeading(new Vector2d(12,33), Rotation2d.exp(Math.toRadians(180)))
                         .strafeToConstantHeading(new Vector2d(10,33))
-                        .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB))
-                        .waitSeconds(0.25)
-                        .stopAndAdd(motorControlActions.lowerClaw.release()) // place first pixel
-                        .endTrajectory()
+                        .stopAndAdd(new SequentialAction(
+                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                new SleepAction(0.25),
+                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB)
+                        ))
                         .strafeTo(new Vector2d(12, 33))
                         .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.PLACE)) // raise arm/slide to prepare to place pixel
                         .strafeTo(new Vector2d(12, 50))
                         .strafeTo(new Vector2d(15,50))
                         .splineToSplineHeading(new Pose2d(48, 30,Math.toRadians(0)), Math.toRadians(0))
                         .strafeTo(new Vector2d(50, 30))
-                        .waitSeconds(1)
-                        .endTrajectory()
+                        .waitSeconds(0.5)
                         .stopAndAdd(motorControlActions.upperClaw.release()) // place pixel
                         .strafeTo(new Vector2d(48, 30))
                         .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
                         .build();
+
+         */
 
         motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
 
@@ -157,7 +170,7 @@ public class LeftBlueVisionAuto extends ActionOpMode
             }
 
             // Don't burn CPU cycles busy-looping in this sample
-            sleep(50);
+            sleep(10);
         }
 
         /*
@@ -189,19 +202,25 @@ public class LeftBlueVisionAuto extends ActionOpMode
 
             case RIGHT:
             {
+                /*
                 runBlocking(new MotorControlActions.RaceParallelCommand(
                         trajRight,
                         motorControlActions.update()
                 ));
+
+                 */
                 break;
             }
 
             case CENTER:
             {
+                /*
                 runBlocking(new MotorControlActions.RaceParallelCommand(
                         trajCenter,
                         motorControlActions.update()
                 ));
+
+                 */
                 break;
             }
         }

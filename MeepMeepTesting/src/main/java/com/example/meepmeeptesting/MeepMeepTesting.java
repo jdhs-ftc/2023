@@ -18,23 +18,20 @@ public class MeepMeepTesting {
                 .build();
 
         myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, 63, Math.toRadians(270)))
-                .strafeToSplineHeading(new Vector2d(12,33), Rotation2d.exp(Math.toRadians(180)))
-                .strafeToConstantHeading(new Vector2d(10,33))
-                //.stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB))
-                .waitSeconds(0.25)
-                //.stopAndAdd(motorControlActions.lowerClaw.release()) // place first pixel
-                .endTrajectory()
-                .strafeTo(new Vector2d(12, 33))
-                //.stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.PLACE)) // raise arm/slide to prepare to place pixel
-                .strafeTo(new Vector2d(12, 50))
-                .strafeTo(new Vector2d(15,50))
-                .splineToSplineHeading(new Pose2d(48, 30,Math.toRadians(0)), Math.toRadians(0))
-                .strafeTo(new Vector2d(50, 30))
-                .waitSeconds(1)
-                .endTrajectory()
-                //.stopAndAdd(motorControlActions.upperClaw.release()) // place pixel
-                .strafeTo(new Vector2d(48, 30))
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
+                .strafeToConstantHeading(new Vector2d(15,35))
+                /*
+                .stopAndAdd(new SequentialAction(
+                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                        new SleepAction(0.25),
+                        motorControlActions.lowerClaw.release(),
+                        new SleepAction(0.1),
+                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                ))
+                 */
+                .strafeTo(new Vector2d(12, 35))
+                .strafeTo(new Vector2d(12, 36))
+                .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_JUICE_DARK)

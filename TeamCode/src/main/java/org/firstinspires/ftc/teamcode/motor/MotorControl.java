@@ -20,6 +20,7 @@ public class MotorControl {
     public UpperClaw upperClaw;
     public Slide slide;
     public Arm arm;
+    public Shooter shooter;
 
     /**
      * Gets the current state of the arm and slide together.
@@ -36,6 +37,8 @@ public class MotorControl {
     public void setCurrentMode(combinedMode targetMode) {
         currentMode = targetMode;
     }
+
+
 
 
     /**
@@ -62,6 +65,7 @@ public class MotorControl {
         slide = new Slide(hardwareMap);
         lowerClaw = new LowerClaw(hardwareMap);
         upperClaw = new UpperClaw(hardwareMap);
+        shooter = new Shooter(hardwareMap);
 
         setCurrentMode(combinedMode.GRAB);
     }
@@ -73,7 +77,7 @@ public class MotorControl {
         if (getCurrentMode() != oldMode) {
         switch (getCurrentMode()) {
             case GRAB:
-                slide.setTargetPosition(0);
+                slide.setTargetPosition(-60);
                 arm.moveDown();
                 break;
             case IDLE:
@@ -81,7 +85,7 @@ public class MotorControl {
                 slide.setTargetPosition(70);
                 break;
             case PLACE:
-                arm.setTargetPosition(60); // TODO: TUNE
+                arm.moveOut();
                 slide.setTargetPosition(750); // TODO: TUNE
                 break;
 
@@ -100,9 +104,6 @@ public class MotorControl {
         slide.reset();
     }
 
-    public boolean isBusy() {
-        return arm.isBusy() || slide.isBusy();
-    }
 
     public boolean closeEnough() {
         return arm.closeEnough() && slide.closeEnough();
@@ -112,6 +113,8 @@ public class MotorControl {
         return arm.isOverCurrent() || slide.isOverCurrent();
     }
 
+
+
     /**
      * This class controls the arm motor.
      */
@@ -120,7 +123,7 @@ public class MotorControl {
         public DcMotorEx motor;
 
         public static PIDFController.PIDCoefficients ARM_PID = new PIDFController.PIDCoefficients(0.05, 0.0, 0.01);
-        private final PIDFController armController = new PIDFController(ARM_PID);
+        public final PIDFController armController = new PIDFController(ARM_PID);
 
         public double getTargetPosition() {
             return targetPosition;
@@ -139,7 +142,7 @@ public class MotorControl {
             motor.setCurrentAlert(4.4, CurrentUnit.AMPS);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            armController.setOutputBounds(-0.3,0.5);
+            armController.setOutputBounds(0,0.5);
             //motor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(10, 3, 0, 0));
         }
 
@@ -163,37 +166,33 @@ public class MotorControl {
             armController.targetPosition = targetPosition;
 
 
-            /*
-            if (armError > 0) {
-                motor.setPower(1);
-            } else {
-                motor.setPower(-1);
-            }
 
-             */
 
             if (!motor.isOverCurrent()) {
-                motor.setPower(armController.update(motor.getCurrentPosition()) + 0.3);
+                motor.setPower(armController.update(motor.getCurrentPosition()));
             } else {
                 motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 motor.setPower(0);
 
             }
-            //motor.setPower(1);
         }
 
         public void moveOut() {
-            setTargetPosition(-24);
+            setTargetPosition(60);
         }
 
         public void moveDown() {
             setTargetPosition(0);
         }
 
-
-        public boolean isBusy() {
-            return motor.isBusy();
+        public void moveTop() {
+            setTargetPosition(120);
         }
+
+
+
+
+
         public boolean closeEnough() {
             return Math.abs(motor.getCurrentPosition() - targetPosition) < 2; }
 
@@ -267,9 +266,6 @@ public class MotorControl {
         }
 
 
-        public boolean isBusy() {
-            return motor.isBusy();
-        }
 
         public boolean closeEnough() {
             return Math.abs(motor.getCurrentPosition() - targetPosition) < 20; }
@@ -312,6 +308,27 @@ public class MotorControl {
         public UpperClaw(HardwareMap hardwareMap) {
             servo = hardwareMap.get(Servo.class, "upperClaw");
             servo.setPosition(0);
+        }
+
+        /**
+         * This opens or closes the claw.
+         * @param power The power to set the claw servo to.
+         */
+        public void setPower(double power) {
+            servo.setPosition(power);
+        }
+
+    }
+    public static class Shooter {
+        public Servo servo;
+
+        /**
+         * This initializes the claw servo. This should be run before any other methods.
+         * @param hardwareMap The hardware map to use to get the servo.
+         */
+        public Shooter(HardwareMap hardwareMap) {
+            servo = hardwareMap.get(Servo.class, "shooter");
+            servo.setPosition(0.5);
         }
 
         /**

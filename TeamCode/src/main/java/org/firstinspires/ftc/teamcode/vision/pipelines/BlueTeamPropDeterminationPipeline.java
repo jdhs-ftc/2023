@@ -32,11 +32,13 @@ public class BlueTeamPropDeterminationPipeline extends OpenCvPipeline
     /*
      * The core values which define the location and size of the sample regions
      */
-    static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(109,300);
-    static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(181,300);
-    static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(253,300);
-    static final int REGION_WIDTH = 20;
-    static final int REGION_HEIGHT = 20;
+    static final Point REGION1_TOPLEFT_ANCHOR_POINT = new Point(50,225);
+    static final Point REGION2_TOPLEFT_ANCHOR_POINT = new Point(225,250);
+    static final Point REGION3_TOPLEFT_ANCHOR_POINT = new Point(500,225);
+    static final int SIDE_REGION_WIDTH = 125;
+    static final int SIDE_REGION_HEIGHT = 175;
+    static final int FRONT_REGION_WIDTH = 250;
+    static final int FRONT_REGION_HEIGHT = 100;
 
     /*
      * Points which actually define the sample region rectangles, derived from above values
@@ -59,20 +61,20 @@ public class BlueTeamPropDeterminationPipeline extends OpenCvPipeline
             REGION1_TOPLEFT_ANCHOR_POINT.x,
             REGION1_TOPLEFT_ANCHOR_POINT.y);
     Point region1_pointB = new Point(
-            REGION1_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
-            REGION1_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+            REGION1_TOPLEFT_ANCHOR_POINT.x + SIDE_REGION_WIDTH,
+            REGION1_TOPLEFT_ANCHOR_POINT.y + SIDE_REGION_HEIGHT);
     Point region2_pointA = new Point(
             REGION2_TOPLEFT_ANCHOR_POINT.x,
             REGION2_TOPLEFT_ANCHOR_POINT.y);
     Point region2_pointB = new Point(
-            REGION2_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
-            REGION2_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+            REGION2_TOPLEFT_ANCHOR_POINT.x + FRONT_REGION_WIDTH,
+            REGION2_TOPLEFT_ANCHOR_POINT.y + FRONT_REGION_HEIGHT);
     Point region3_pointA = new Point(
             REGION3_TOPLEFT_ANCHOR_POINT.x,
             REGION3_TOPLEFT_ANCHOR_POINT.y);
     Point region3_pointB = new Point(
-            REGION3_TOPLEFT_ANCHOR_POINT.x + REGION_WIDTH,
-            REGION3_TOPLEFT_ANCHOR_POINT.y + REGION_HEIGHT);
+            REGION3_TOPLEFT_ANCHOR_POINT.x + SIDE_REGION_WIDTH,
+            REGION3_TOPLEFT_ANCHOR_POINT.y + SIDE_REGION_HEIGHT);
 
     /*
      * Working variables

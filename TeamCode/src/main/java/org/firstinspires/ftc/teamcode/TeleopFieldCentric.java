@@ -40,11 +40,13 @@ public class TeleopFieldCentric extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        //PhotonCore.enable();
 
         //  Initialization Period
 
         // Enable Performance Optimization
-        //PhotonCore.enable();
+
+        //PhotonCore.start(hardwareMap); // TODO: if somethings' wrong THIS IS WHY
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
 
         for (LynxModule module : allHubs) {
@@ -100,6 +102,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 } else {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(-90.0));
                 }
+                gamepad1.rumbleBlips(1);
             }
             if (gamepad1.share) {
                 if (gamepad1.dpad_up && !previousGamepad1.dpad_up) {
@@ -137,7 +140,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 //input = drive.pose.heading.inverse().plus(90).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
             }
             Vector2d controllerHeading = new Vector2d(-gamepad1.right_stick_y, -gamepad1.right_stick_x);
-            if (gamepad2.right_bumper) {
+            if (motorControl.getCurrentMode() == MotorControl.combinedMode.PLACE) {
                 input = input.plus(new Vector2d(
                         0,
                         -gamepad2.right_stick_x * 0.25
@@ -151,7 +154,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                                         input.x,
                                         input.y
                                 ),
-                                (gamepad1.left_trigger - gamepad1.right_trigger)
+                                (gamepad1.left_trigger - gamepad1.right_trigger) * speed
                         )
                 );
             } else {
@@ -200,59 +203,10 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             // CLAW
 
-            // grab with claw if holding pixel
-            /*
-            if (lowerClawHoldingPixel) {
-                motorControl.lowerClaw.setPower(0.5);
-            } else {
-                motorControl.lowerClaw.setPower(-0.25);
-            }
 
-            if (upperClawHoldingPixel) {
-                motorControl.upperClaw.setPower(0.5);
-            } else {
-                motorControl.upperClaw.setPower(-0.25);
-            }
 
-            // pickup pixel
-            if (gamepad2.left_bumper && !lowerClawHoldingPixel && !previousGamepad2.left_bumper) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
-
-            } else if (!gamepad2.left_bumper && previousGamepad2.left_bumper && motorControl.getCurrentMode() == MotorControl.combinedMode.GRAB){ // if driver releases button
-                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
-                lowerClawHoldingPixel = true;
-            }
-
-            // place pixel
-            if (gamepad2.left_bumper && lowerClawHoldingPixel && motorControl.getCurrentMode() == MotorControl.combinedMode.PLACE) {
-                lowerClawHoldingPixel = false; // TODO: ask if more wanted here
-            }
-
-            // pickup pixel
-            if (gamepad2.right_bumper && !upperClawHoldingPixel && !previousGamepad2.right_bumper) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
-
-            } else if (gamepad2.right_bumper && !previousGamepad2.right_bumper && motorControl.getCurrentMode() == MotorControl.combinedMode.GRAB){ // if driver releases button
-                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
-                upperClawHoldingPixel = true;
-            }
-
-            // place pixel
-            if (gamepad2.right_bumper && upperClawHoldingPixel && motorControl.getCurrentMode() == MotorControl.combinedMode.PLACE) {
-                upperClawHoldingPixel = false; // TODO: ask if more wanted here
-            }
-            if (gamepad2.dpad_down) {
-                // toggle clawHoldingPixel
-                lowerClawHoldingPixel = false;
-            }
-
-            if (gamepad2.dpad_up) {
-                upperClawHoldingPixel = false;
-            }
-             */
-
-            motorControl.lowerClaw.setPower(gamepad2.left_trigger);
-            motorControl.upperClaw.setPower(gamepad2.right_trigger);
+            motorControl.lowerClaw.setPower(gamepad2.right_trigger);
+            motorControl.upperClaw.setPower(gamepad2.left_trigger);
 
 
 
@@ -268,13 +222,16 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
 
 
-
+            if (gamepad2.dpad_down) {
+                motorControl.arm.setTargetPosition(-10);
+                motorControl.slide.setTargetPosition(-60);
+            }
 
             // Slide
             if (motorControl.slide.getTargetPosition() >= 1000 && -gamepad2.left_stick_y > 0) {
                 motorControl.slide.setTargetPosition(999);
 
-            } else if (motorControl.slide.getTargetPosition() <= -60 && -gamepad2.left_stick_y < 0) {
+            } else if (motorControl.slide.getTargetPosition() <= -60 && -gamepad2.left_stick_y < 0 && !gamepad2.dpad_down) {
                 motorControl.slide.setTargetPosition(-60);
 
             } else { motorControl.slide.setTargetPosition(motorControl.slide.getTargetPosition() + (-gamepad2.left_stick_y * 40));}
@@ -284,23 +241,37 @@ public class TeleopFieldCentric extends LinearOpMode {
             if (gamepad2.y) {
                 motorControl.setCurrentMode(MotorControl.combinedMode.PLACE);
             }
-            if (gamepad2.b || gamepad1.b) {
+            if (gamepad2.b) {
                 motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
             }
-            if (gamepad2.a || gamepad1.a) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+            if (gamepad2.a) {
+                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+            }
+
+            if (gamepad2.square) {
+                motorControl.shooter.setPower(0);
+            } else {
+                motorControl.shooter.setPower(0.5);
             }
 
 
-            if (gamepad2.dpad_right && gamepad2.dpad_up) {
-                motorControl.reset();
+
+
+            if (gamepad2.a && !previousGamepad2.a) {
+                motorControl.arm.armController.setOutputBounds(-0.5,0.5);
+            } else if (previousGamepad2.a && !gamepad2.a) {
+                motorControl.arm.armController.setOutputBounds(0,0.5);
+            }
+
+            if (gamepad2.left_bumper && !previousGamepad2.left_bumper) {
+                motorControl.arm.armController.setOutputBounds(-0.5,0.5);
+            } else if (previousGamepad2.left_bumper && !gamepad2.left_bumper) {
+                motorControl.arm.armController.setOutputBounds(0,0.5);
             }
 
 
 
 
-
-            // TODO: remove
             //gamepad1.rumble(CONTROL_HUB.getCurrent(CurrentUnit.AMPS),EXPANSION_HUB.getCurrent(CurrentUnit.AMPS),Gamepad.RUMBLE_DURATION_CONTINUOUS);
             if (motorControl.isOverCurrent()) {
                 gamepad1.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);

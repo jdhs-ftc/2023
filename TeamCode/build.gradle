@@ -31,6 +31,9 @@ repositories {
     maven {
         url = 'https://www.matthewo.tech/maven'
     }
+    maven {
+        url = 'https://jitpack.io'
+    }
 }
 
 dependencies {
@@ -39,7 +42,9 @@ dependencies {
 
     implementation "com.acmerobotics.roadrunner:ftc:0.1.6"
     implementation "com.acmerobotics.dashboard:dashboard:0.4.13"
+
     implementation 'org.team11260:fast-load:0.1.1'
+    implementation 'com.github.Eeshwar-Krishnan:PhotonFTC:v3.0.0-ALPHA'
 }
 
 
