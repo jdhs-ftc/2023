@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.auto.blue.old;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Action;
@@ -28,7 +28,8 @@ import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ActionOpMode;
@@ -36,7 +37,7 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-import org.firstinspires.ftc.teamcode.vision.pipelines.BlueTeamPropDeterminationPipeline;
+import org.firstinspires.ftc.teamcode.vision.pipelines.TeamPropDeterminationPipeline;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -47,12 +48,13 @@ import org.openftc.easyopencv.OpenCvWebcam;
  * and then snapshot that value for later use when the START
  * command is issued. The pipeline is re-used from SkystoneDeterminationExample
  */
-@TeleOp
-public class RightBlueVisionAuto extends ActionOpMode
+@Autonomous
+@Disabled
+public class RightBlueVisionAutoOld extends ActionOpMode
 {
     OpenCvWebcam webcam;
-    BlueTeamPropDeterminationPipeline pipeline;
-    BlueTeamPropDeterminationPipeline.PropPosition snapshotAnalysis = BlueTeamPropDeterminationPipeline.PropPosition.LEFT; // default
+    TeamPropDeterminationPipeline pipeline;
+    TeamPropDeterminationPipeline.PropPosition snapshotAnalysis = TeamPropDeterminationPipeline.PropPosition.LEFT; // default
 
     @Override
     public void runOpMode()
@@ -63,7 +65,7 @@ public class RightBlueVisionAuto extends ActionOpMode
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new BlueTeamPropDeterminationPipeline(telemetry);
+        pipeline = new TeamPropDeterminationPipeline(telemetry);
         webcam.setPipeline(pipeline);
 
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -89,7 +91,6 @@ public class RightBlueVisionAuto extends ActionOpMode
                 drive.actionBuilder(drive.pose)
                         .strafeToSplineHeading(new Vector2d(-36,35), Rotation2d.exp(Math.toRadians(0)))
                         .strafeToConstantHeading(new Vector2d(-33,35))
-                        /*
                         .stopAndAdd(new SequentialAction(
                                 motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
                                 new SleepAction(0.25),
@@ -97,43 +98,49 @@ public class RightBlueVisionAuto extends ActionOpMode
                                 new SleepAction(0.1),
                                 motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
                         ))
-
-                         */
-
                         .strafeTo(new Vector2d(-36, 35))
-                        .strafeTo(new Vector2d(-36, 57))
-                        .strafeTo(new Vector2d(-35, 57))
-                        .splineTo(new Vector2d(12, 57), Math.toRadians(0)) // TODO: go through gate and park in second spot, to avoid crashing?
-                        .splineToSplineHeading(new Pose2d(60,57,Math.toRadians(180.0000001)), Math.toRadians(0))
+                        .strafeTo(new Vector2d(-36, 12))
+                        .strafeTo(new Vector2d(-35, 12))
+                        .splineTo(new Vector2d(12, 12), Math.toRadians(0))
+                        .splineToSplineHeading(new Pose2d(60,12,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
 
         Action trajCenter =
                 drive.actionBuilder(drive.pose)
-                        .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(270)))
-                        .strafeToConstantHeading(new Vector2d(12,32))
+                        .strafeToSplineHeading(new Vector2d(-36,35), Rotation2d.exp(Math.toRadians(-90)))
+                        .endTrajectory()
+                        .strafeToConstantHeading(new Vector2d(-36,32))
                         .stopAndAdd(new SequentialAction(
                                 motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
                                 new SleepAction(0.25),
-                                motorControlActions.lowerClaw.release()
+                                motorControlActions.lowerClaw.release(),
+                                new SleepAction(0.1),
+                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
                         ))
-                        .strafeTo(new Vector2d(12, 36))
-                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
+                        .strafeTo(new Vector2d(-36, 35))
+                        .strafeTo(new Vector2d(-55, 35))
+                        .strafeTo(new Vector2d(-55, 30))
+                        .splineTo(new Vector2d(12, 12), Math.toRadians(0))
+                        .splineToSplineHeading(new Pose2d(60,12,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
 
 
         Action trajRight =
                 drive.actionBuilder(drive.pose)
-                        .strafeToSplineHeading(new Vector2d(12,33), Rotation2d.exp(Math.toRadians(180)))
-                        .strafeToConstantHeading(new Vector2d(10,33))
+                        .strafeToSplineHeading(new Vector2d(-36,35), Math.toRadians(180))
+                        .strafeToConstantHeading(new Vector2d(-39,35))
                         .stopAndAdd(new SequentialAction(
                                 motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                                new SleepAction(0.1),
+                                new SleepAction(0.25),
                                 motorControlActions.lowerClaw.release(),
                                 new SleepAction(0.1),
                                 motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
                         ))
-                        .strafeTo(new Vector2d(12, 33))
-                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
+                        .strafeTo(new Vector2d(-36, 35))
+                        .strafeTo(new Vector2d(-36, 12))
+                        .strafeTo(new Vector2d(-35, 12))
+                        .splineTo(new Vector2d(12, 12), Math.toRadians(0))
+                        .splineToSplineHeading(new Pose2d(60,12,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
 
 
@@ -188,25 +195,20 @@ public class RightBlueVisionAuto extends ActionOpMode
 
             case RIGHT:
             {
-                /*
+
                 runBlocking(new MotorControlActions.RaceParallelCommand(
                         trajRight,
                         motorControlActions.update()
                 ));
-
-                 */
                 break;
             }
 
             case CENTER:
             {
-                /*
                 runBlocking(new MotorControlActions.RaceParallelCommand(
                         trajCenter,
                         motorControlActions.update()
                 ));
-
-                 */
                 break;
             }
         }

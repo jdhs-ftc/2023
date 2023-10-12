@@ -9,8 +9,9 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-public class BlueTeamPropDeterminationPipeline extends OpenCvPipeline
+public class TeamPropDeterminationPipeline extends OpenCvPipeline
 {
+    boolean isBlue = true; // CHANGE THIS FOR SIM
     private final Telemetry telemetry;
 
     /*
@@ -94,16 +95,19 @@ public class BlueTeamPropDeterminationPipeline extends OpenCvPipeline
      * This function takes the RGB frame, converts to YCrCb,
      * and extracts the Cb channel to the 'Cb' variable
      */
-    void inputToCr(Mat input)
+    void inputExtractChannels(Mat input)
     {
         Imgproc.cvtColor(input, YCrCb, Imgproc.COLOR_RGB2YCrCb);
         Core.extractChannel(YCrCb, Cr, 1);
         Core.extractChannel(YCrCb, Cb, 2);
     }
 
-    public BlueTeamPropDeterminationPipeline(Telemetry telemetry) {
+    public TeamPropDeterminationPipeline(Telemetry telemetry) {
         this.telemetry = telemetry;
+    }
 
+    public void setBlue(Boolean newIsBlue) {
+        isBlue = newIsBlue;
     }
 
     @Override
@@ -118,7 +122,7 @@ public class BlueTeamPropDeterminationPipeline extends OpenCvPipeline
          * buffer would be re-allocated the first time a real frame
          * was crunched)
          */
-        inputToCr(firstFrame);
+        inputExtractChannels(firstFrame);
 
         /*
          * Submats are a persistent reference to a region of the parent
@@ -175,7 +179,7 @@ public class BlueTeamPropDeterminationPipeline extends OpenCvPipeline
         /*
          * Get the Cr channel of the input frame after conversion to YCrCb
          */
-        inputToCr(input);
+        inputExtractChannels(input);
 
         /*
          * Compute the average pixel value of each submat region. We're
@@ -184,9 +188,15 @@ public class BlueTeamPropDeterminationPipeline extends OpenCvPipeline
          * pixel value of the 3-channel image, and referenced the value
          * at index 2 here.
          */
-        avg1 = -(int) Core.mean(region1_Cr).val[0] + (int) Core.mean(region1_Cb).val[0];
-        avg2 = -(int) Core.mean(region2_Cr).val[0] + (int) Core.mean(region2_Cb).val[0];
-        avg3 = -(int) Core.mean(region3_Cr).val[0] + (int) Core.mean(region3_Cb).val[0];
+        if (isBlue) {
+            avg1 = -(int) Core.mean(region1_Cr).val[0] + (int) Core.mean(region1_Cb).val[0];
+            avg2 = -(int) Core.mean(region2_Cr).val[0] + (int) Core.mean(region2_Cb).val[0];
+            avg3 = -(int) Core.mean(region3_Cr).val[0] + (int) Core.mean(region3_Cb).val[0];
+        } else {
+            avg1 = (int) Core.mean(region1_Cr).val[0];
+            avg2 = (int) Core.mean(region2_Cr).val[0];
+            avg3 = (int) Core.mean(region3_Cr).val[0];
+        }
 
 
         /*

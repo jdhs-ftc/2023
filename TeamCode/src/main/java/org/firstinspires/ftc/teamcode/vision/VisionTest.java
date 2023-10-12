@@ -26,7 +26,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ActionOpMode;
-import org.firstinspires.ftc.teamcode.vision.pipelines.BlueTeamPropDeterminationPipeline;
+import org.firstinspires.ftc.teamcode.vision.pipelines.TeamPropDeterminationPipeline;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -41,15 +41,15 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class VisionTest extends ActionOpMode
 {
     OpenCvWebcam webcam;
-    BlueTeamPropDeterminationPipeline pipeline;
-    BlueTeamPropDeterminationPipeline.PropPosition snapshotAnalysis = BlueTeamPropDeterminationPipeline.PropPosition.LEFT; // default
+    TeamPropDeterminationPipeline pipeline;
+    TeamPropDeterminationPipeline.PropPosition snapshotAnalysis = TeamPropDeterminationPipeline.PropPosition.LEFT; // default
 
     @Override
     public void runOpMode()
     {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new BlueTeamPropDeterminationPipeline(telemetry);
+        pipeline = new TeamPropDeterminationPipeline(telemetry);
         webcam.setPipeline(pipeline);
 
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()

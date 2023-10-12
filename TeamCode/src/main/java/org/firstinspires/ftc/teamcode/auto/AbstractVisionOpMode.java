@@ -24,11 +24,6 @@ package org.firstinspires.ftc.teamcode.auto;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Rotation2d;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ActionOpMode;
@@ -36,23 +31,22 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-import org.firstinspires.ftc.teamcode.vision.pipelines.BlueTeamPropDeterminationPipeline;
+import org.firstinspires.ftc.teamcode.vision.pipelines.TeamPropDeterminationPipeline;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-/*
- * This sample demonstrates how to run analysis during INIT
- * and then snapshot that value for later use when the START
- * command is issued. The pipeline is re-used from SkystoneDeterminationExample
- */
-@TeleOp
-public class LeftBlueVisionAuto extends ActionOpMode
+public abstract class AbstractVisionOpMode extends ActionOpMode
 {
+    public abstract PoseStorage.Team team();
+    public abstract Pose2d startPose();
+    public abstract Action trajLeft(MecanumDrive drive, MotorControlActions motorControlActions);
+    public abstract Action trajCenter(MecanumDrive drive, MotorControlActions motorControlActions);
+    public abstract Action trajRight(MecanumDrive drive, MotorControlActions motorControlActions);
     OpenCvWebcam webcam;
-    BlueTeamPropDeterminationPipeline pipeline;
-    BlueTeamPropDeterminationPipeline.PropPosition snapshotAnalysis = BlueTeamPropDeterminationPipeline.PropPosition.LEFT; // default
+    TeamPropDeterminationPipeline pipeline;
+    TeamPropDeterminationPipeline.PropPosition snapshotAnalysis = TeamPropDeterminationPipeline.PropPosition.LEFT; // default
 
     @Override
     public void runOpMode()
@@ -63,7 +57,8 @@ public class LeftBlueVisionAuto extends ActionOpMode
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        pipeline = new BlueTeamPropDeterminationPipeline(telemetry);
+        pipeline = new TeamPropDeterminationPipeline(telemetry);
+        pipeline.setBlue(team() == PoseStorage.Team.BlUE);
         webcam.setPipeline(pipeline);
 
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -84,53 +79,11 @@ public class LeftBlueVisionAuto extends ActionOpMode
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, Math.toRadians(-90)));
-        drive.pose = new Pose2d(12,63, Math.toRadians(-90));
-        Action trajLeft =
-                drive.actionBuilder(drive.pose)
-                        .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
-                        .strafeToConstantHeading(new Vector2d(15,35))
+        drive.pose = startPose();
 
-                        .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                                new SleepAction(0.25),
-                                motorControlActions.lowerClaw.release(),
-                                new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
-                        ))
-
-                        .strafeTo(new Vector2d(12, 35))
-                        .strafeTo(new Vector2d(12, 36))
-                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
-                        .build();
-
-        Action trajCenter =
-                drive.actionBuilder(drive.pose)
-                        .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(270)))
-                        .strafeToConstantHeading(new Vector2d(12,32))
-                        .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                                new SleepAction(0.25),
-                                motorControlActions.lowerClaw.release()
-                        ))
-                        .strafeTo(new Vector2d(12, 36))
-                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
-                        .build();
-
-
-        Action trajRight =
-                drive.actionBuilder(drive.pose)
-                        .strafeToSplineHeading(new Vector2d(12,33), Rotation2d.exp(Math.toRadians(180)))
-                        .strafeToConstantHeading(new Vector2d(10,33))
-                        .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                                new SleepAction(0.1),
-                                motorControlActions.lowerClaw.release(),
-                                new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
-                        ))
-                        .strafeTo(new Vector2d(12, 33))
-                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
-                        .build();
+        Action trajLeft = trajLeft(drive, motorControlActions);
+        Action trajCenter = trajCenter(drive, motorControlActions);
+        Action trajRight = trajRight(drive, motorControlActions);
 
 
         motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
@@ -182,31 +135,27 @@ public class LeftBlueVisionAuto extends ActionOpMode
                 break;
             }
 
-            case RIGHT:
-            {
-                /*
-                runBlocking(new MotorControlActions.RaceParallelCommand(
-                        trajRight,
-                        motorControlActions.update()
-                ));
-
-                 */
-                break;
-            }
-
             case CENTER:
             {
-                /*
                 runBlocking(new MotorControlActions.RaceParallelCommand(
                         trajCenter,
                         motorControlActions.update()
                 ));
+                break;
+            }
 
-                 */
+            case RIGHT:
+            {
+
+                runBlocking(new MotorControlActions.RaceParallelCommand(
+                        trajRight,
+                        motorControlActions.update()
+                ));
                 break;
             }
         }
 
         PoseStorage.currentPose = drive.pose;
+        PoseStorage.currentTeam = team();
     }
 }

@@ -97,7 +97,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
 
             if (gamepad1.dpad_left && !previousGamepad1.dpad_left) {
-                if (!PoseStorage.isBlue) {
+                if (!(PoseStorage.currentTeam == PoseStorage.Team.BlUE)) {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(90.0));
                 } else {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(-90.0));
@@ -112,9 +112,14 @@ public class TeleopFieldCentric extends LinearOpMode {
                 }
 
                 if (gamepad1.dpad_left && !previousGamepad1.dpad_left) {
-                    PoseStorage.isBlue = !PoseStorage.isBlue;
-                    if (PoseStorage.isBlue) { gamepad1.rumbleBlips(1);}
-                    else { gamepad1.rumbleBlips(2);}
+                    if (PoseStorage.currentTeam == PoseStorage.Team.RED) {
+                        gamepad1.rumbleBlips(1);
+                        PoseStorage.currentTeam = PoseStorage.Team.BlUE;
+
+                    } else {
+                        gamepad1.rumbleBlips(2);
+                        PoseStorage.currentTeam = PoseStorage.Team.RED;
+                    }
                 }
             }
 
@@ -128,7 +133,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             //Pose2d poseEstimate = drive.pose;
             double rotationAmount = -drive.pose.heading.log(); // Rotation2d.log() makes it into a double in radians.
             if (fieldCentric) {
-                if (PoseStorage.isBlue) {
+                if (PoseStorage.currentTeam == PoseStorage.Team.BlUE) {
                     //input = drive.pose.heading.inverse().plus(90).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
                     rotationAmount = rotationAmount - Math.toRadians(90);
                 } else {
