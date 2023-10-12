@@ -17,9 +17,9 @@ public class MeepMeepTesting {
                 .setDimensions(14,18)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, 63, Math.toRadians(270)))
-                .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
-                .strafeToConstantHeading(new Vector2d(15,35))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-36, 63, Math.toRadians(270)))
+                .strafeToSplineHeading(new Vector2d(-36,35), Rotation2d.exp(Math.toRadians(0)))
+                .strafeToConstantHeading(new Vector2d(-33,35))
                 /*
                 .stopAndAdd(new SequentialAction(
                         motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
@@ -28,10 +28,14 @@ public class MeepMeepTesting {
                         new SleepAction(0.1),
                         motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
                 ))
+
                  */
-                .strafeTo(new Vector2d(12, 35))
-                .strafeTo(new Vector2d(12, 36))
-                .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
+
+                .strafeTo(new Vector2d(-36, 35))
+                .strafeTo(new Vector2d(-36, 12))
+                .strafeTo(new Vector2d(-35, 12))
+                        .splineTo(new Vector2d(12, 12), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(60,12,Math.toRadians(180.0000001)), Math.toRadians(0))
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_JUICE_DARK)

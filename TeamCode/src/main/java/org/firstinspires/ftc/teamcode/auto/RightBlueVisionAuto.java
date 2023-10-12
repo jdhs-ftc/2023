@@ -19,7 +19,7 @@
  * SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Action;
@@ -31,6 +31,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.ActionOpMode;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 import org.firstinspires.ftc.teamcode.vision.pipelines.BlueTeamPropDeterminationPipeline;
@@ -45,7 +48,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
  * command is issued. The pipeline is re-used from SkystoneDeterminationExample
  */
 @TeleOp
-public class LeftBlueVisionAuto extends ActionOpMode
+public class RightBlueVisionAuto extends ActionOpMode
 {
     OpenCvWebcam webcam;
     BlueTeamPropDeterminationPipeline pipeline;
@@ -81,31 +84,29 @@ public class LeftBlueVisionAuto extends ActionOpMode
 
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, Math.toRadians(-90)));
-        drive.pose = new Pose2d(12,63, Math.toRadians(-90));
+        drive.pose = new Pose2d(-36,63, Math.toRadians(-90));
         Action trajLeft =
                 drive.actionBuilder(drive.pose)
-                        .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
-                        .strafeToConstantHeading(new Vector2d(15,35))
+                        .strafeToSplineHeading(new Vector2d(-36,35), Rotation2d.exp(Math.toRadians(0)))
+                        .strafeToConstantHeading(new Vector2d(-33,35))
+                        /*
                         .stopAndAdd(new SequentialAction(
                                 motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
                                 new SleepAction(0.25),
-                                motorControlActions.lowerClaw.release()
+                                motorControlActions.lowerClaw.release(),
+                                new SleepAction(0.1),
+                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
                         ))
-                        .strafeTo(new Vector2d(12, 35))
-                        /*
-                        .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.PLACE)) // raise arm/slide to prepare to place pixel
-                        .strafeTo(new Vector2d(12, 50))
-                        .strafeTo(new Vector2d(15,50))
-                        .splineToSplineHeading(new Pose2d(48, 42,Math.toRadians(0)), Math.toRadians(0))
-                        .strafeTo(new Vector2d(50, 42))
-                        .waitSeconds(0.5)
-                        .stopAndAdd(motorControlActions.upperClaw.release()) // place pixel
-                        .strafeTo(new Vector2d(48, 42))
 
                          */
-                        .splineTo(new Vector2d(60,60), Math.toRadians(0))
+
+                        .strafeTo(new Vector2d(-36, 35))
+                        .strafeTo(new Vector2d(-36, 57))
+                        .strafeTo(new Vector2d(-35, 57))
+                        .splineTo(new Vector2d(12, 57), Math.toRadians(0)) // TODO: go through gate and park in second spot, to avoid crashing?
+                        .splineToSplineHeading(new Pose2d(60,57,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
-        /*
+
         Action trajCenter =
                 drive.actionBuilder(drive.pose)
                         .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(270)))
@@ -115,16 +116,8 @@ public class LeftBlueVisionAuto extends ActionOpMode
                                 new SleepAction(0.25),
                                 motorControlActions.lowerClaw.release()
                         ))
-                        .strafeTo(new Vector2d(12, 35))
-                        .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.PLACE)) // raise arm/slide to prepare to place pixel
-                        .strafeTo(new Vector2d(12, 50))
-                        .strafeTo(new Vector2d(15,50))
-                        .splineToSplineHeading(new Pose2d(48, 36,Math.toRadians(0)), Math.toRadians(0))
-                        .strafeTo(new Vector2d(50, 36))
-                        //.waitSeconds(0.5)
-                        .stopAndAdd(motorControlActions.upperClaw.release()) // place pixel
-                        .strafeTo(new Vector2d(48, 36))
-                        .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                        .strafeTo(new Vector2d(12, 36))
+                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
 
 
@@ -134,22 +127,15 @@ public class LeftBlueVisionAuto extends ActionOpMode
                         .strafeToConstantHeading(new Vector2d(10,33))
                         .stopAndAdd(new SequentialAction(
                                 motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                                new SleepAction(0.25),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB)
+                                new SleepAction(0.1),
+                                motorControlActions.lowerClaw.release(),
+                                new SleepAction(0.1),
+                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
                         ))
                         .strafeTo(new Vector2d(12, 33))
-                        .stopAndAdd(motorControlActions.setCurrentMode(MotorControl.combinedMode.PLACE)) // raise arm/slide to prepare to place pixel
-                        .strafeTo(new Vector2d(12, 50))
-                        .strafeTo(new Vector2d(15,50))
-                        .splineToSplineHeading(new Pose2d(48, 30,Math.toRadians(0)), Math.toRadians(0))
-                        .strafeTo(new Vector2d(50, 30))
-                        .waitSeconds(0.5)
-                        .stopAndAdd(motorControlActions.upperClaw.release()) // place pixel
-                        .strafeTo(new Vector2d(48, 30))
-                        .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
 
-         */
 
         motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
 
