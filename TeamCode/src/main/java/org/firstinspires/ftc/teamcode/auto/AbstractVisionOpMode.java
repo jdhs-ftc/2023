@@ -94,8 +94,10 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
          */
         while (!isStarted() && !isStopRequested())
         {
-            telemetry.addData("Realtime analysis", pipeline.getAnalysis());
+            /*
+            telemetry.addData("Realtime analysis", pipeline.getAnalysis()); // Commented out: pipeline has it's own telemetry
             telemetry.update();
+             */
 
             if (gamepad2.left_bumper) {
                 motorControl.lowerClaw.setPower(0.8);

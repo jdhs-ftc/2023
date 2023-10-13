@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-@Autonomous(group = "Blue", name = "LEFT Blue Vision Auto", preselectTeleOp = "TeleopFieldCentric")
+@Autonomous(group = "Blue", name = "RIGHT Blue Vision Auto", preselectTeleOp = "TeleopFieldCentric")
 public class RightBlueVisionAuto extends AbstractVisionOpMode {
     @Override
     public PoseStorage.Team team() {
