@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2021 OpenFTC Team
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package org.firstinspires.ftc.teamcode.auto.red;
 
 import com.acmerobotics.roadrunner.Action;
@@ -13,79 +34,80 @@ import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-@Autonomous(group = "Red", name = "RIGHT Red Vision Auto", preselectTeleOp = "TeleopFieldCentric")
+
+/*
+ * This sample demonstrates how to run analysis during INIT
+ * and then snapshot that value for later use when the START
+ * command is issued. The pipeline is re-used from SkystoneDeterminationExample
+ */
+@Autonomous(group = "Red", name = "RIGHT Red Vision Auto", preselectTeleOp = "Teleop Field Centric")
 public class RightRedVisionAuto extends AbstractVisionOpMode {
+
     @Override
     public PoseStorage.Team team() {
         return PoseStorage.Team.RED;
     }
 
-
     @Override
     public Pose2d startPose() {
-        return new Pose2d(-36,-63, Math.toRadians(-90));
+        return new Pose2d(12, -63, Math.toRadians(90)); // change to 8 for paul idea
     }
+
+
     @Override
     public Action trajLeft(MecanumDrive drive, MotorControlActions motorControlActions) {
         return drive.actionBuilder(drive.pose)
-                .strafeToSplineHeading(new Vector2d(-36,-35),Math.toRadians(0))
-                .strafeToConstantHeading(new Vector2d(-33,-35))
+                .stopAndAdd(new SleepAction(1))
+                .strafeToLinearHeading(new Vector2d(12.01, -33), Math.toRadians(-180))
+                //.strafeToConstantHeading(new Vector2d(10,-33))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                        new SleepAction(0.25),
-                        motorControlActions.lowerClaw.release(),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        motorControlActions.lowerClaw.release(),
+                        new SleepAction(0.25),
+                        motorControlActions.slide.setTargetPosition(150)
                 ))
-                .strafeTo(new Vector2d(-36, -35))
-                .strafeTo(new Vector2d(-36, -12))
-                .strafeTo(new Vector2d(-35, -12))
-                .splineTo(new Vector2d(12, -12), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(60,-12,Math.toRadians(-180.0000001)), Math.toRadians(0))
+                //.strafeTo(new Vector2d(12, -33))
+                .splineToSplineHeading(new Pose2d(55, -60, Math.toRadians(-180.0000001)), Math.toRadians(0))
                 .build();
     }
+
 
     @Override
     public Action trajCenter(MecanumDrive drive, MotorControlActions motorControlActions) {
         return drive.actionBuilder(drive.pose)
-                .strafeToSplineHeading(new Vector2d(-36,-35), Rotation2d.exp(Math.toRadians(90)))
-                .endTrajectory()
-                .strafeToConstantHeading(new Vector2d(-36,-32))
-                /*
+                .stopAndAdd(new SleepAction(1))
+                .strafeToSplineHeading(new Vector2d(12.01, -35), Rotation2d.exp(Math.toRadians(90)))
+                //.strafeToConstantHeading(new Vector2d(12,-33))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                        new SleepAction(0.25),
-                        motorControlActions.lowerClaw.release(),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        motorControlActions.lowerClaw.release(),
+                        new SleepAction(0.25),
+                        motorControlActions.slide.setTargetPosition(150)
                 ))
-
-                 */
-                .strafeTo(new Vector2d(-36, -35))
-                .strafeTo(new Vector2d(-55, -35))
-                .strafeTo(new Vector2d(-55, -30))
-                .splineTo(new Vector2d(12, -12), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(60,-12,Math.toRadians(180.0000001)), Math.toRadians(0))
+                .strafeTo(new Vector2d(12, -36))
+                .splineToSplineHeading(new Pose2d(55, -60, Math.toRadians(-180.0000001)), Math.toRadians(0))
                 .build();
     }
+
 
     @Override
     public Action trajRight(MecanumDrive drive, MotorControlActions motorControlActions) {
         return drive.actionBuilder(drive.pose)
-                .strafeToSplineHeading(new Vector2d(-36,-35), Math.toRadians(180))
-                .strafeToConstantHeading(new Vector2d(-39,-35))
+                .stopAndAdd(new SleepAction(1))
+                .strafeToSplineHeading(new Vector2d(12, -35), Rotation2d.exp(Math.toRadians(0)))
+                //.strafeToConstantHeading(new Vector2d(14.01,-35.01))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                        new SleepAction(0.25),
-                        motorControlActions.lowerClaw.release(),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        motorControlActions.lowerClaw.release(),
+                        new SleepAction(0.25),
+                        motorControlActions.slide.setTargetPosition(150)
                 ))
-                .strafeTo(new Vector2d(-36, -35))
-                .strafeTo(new Vector2d(-36, -12))
-                .strafeTo(new Vector2d(-35, -12))
-                .splineTo(new Vector2d(12, -12), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(60,-12,Math.toRadians(-180.0000001)), Math.toRadians(0))
+                //.strafeTo(new Vector2d(12, -35))
+                .strafeTo(new Vector2d(12.01, -37.01))
+                .splineToSplineHeading(new Pose2d(55, -60, Math.toRadians(-180.0000001)), Math.toRadians(0))
                 .build();
     }
 }

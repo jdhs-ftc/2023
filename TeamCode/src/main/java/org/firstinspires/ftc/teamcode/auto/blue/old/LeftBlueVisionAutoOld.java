@@ -93,11 +93,11 @@ public class LeftBlueVisionAutoOld extends ActionOpMode
                         .strafeToConstantHeading(new Vector2d(15,35))
 
                         .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                                 new SleepAction(0.25),
                                 motorControlActions.lowerClaw.release(),
                                 new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                         ))
 
                         .strafeTo(new Vector2d(12, 35))
@@ -110,7 +110,7 @@ public class LeftBlueVisionAutoOld extends ActionOpMode
                         .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(270)))
                         .strafeToConstantHeading(new Vector2d(12,32))
                         .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                                 new SleepAction(0.25),
                                 motorControlActions.lowerClaw.release()
                         ))
@@ -124,18 +124,18 @@ public class LeftBlueVisionAutoOld extends ActionOpMode
                         .strafeToSplineHeading(new Vector2d(12,33), Rotation2d.exp(Math.toRadians(180)))
                         .strafeToConstantHeading(new Vector2d(10,33))
                         .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                                 new SleepAction(0.1),
                                 motorControlActions.lowerClaw.release(),
                                 new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                         ))
                         .strafeTo(new Vector2d(12, 33))
                         .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
 
 
-        motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+        motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
 
         /*
          * The INIT-loop:
@@ -150,7 +150,7 @@ public class LeftBlueVisionAutoOld extends ActionOpMode
                 motorControl.lowerClaw.setPower(0.8);
             }
             if (gamepad2.right_bumper) {
-                motorControl.upperClaw.setPower(0.8);
+                motorControl.upperClaw.setPosition(0.8);
             }
 
             // Don't burn CPU cycles busy-looping in this sample
@@ -170,7 +170,7 @@ public class LeftBlueVisionAutoOld extends ActionOpMode
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
 
-        motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+        motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
 
 
         switch (snapshotAnalysis)

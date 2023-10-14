@@ -92,11 +92,11 @@ public class RightBlueVisionAutoOld extends ActionOpMode
                         .strafeToSplineHeading(new Vector2d(-36,35), Rotation2d.exp(Math.toRadians(0)))
                         .strafeToConstantHeading(new Vector2d(-33,35))
                         .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                                 new SleepAction(0.25),
                                 motorControlActions.lowerClaw.release(),
                                 new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                         ))
                         .strafeTo(new Vector2d(-36, 35))
                         .strafeTo(new Vector2d(-36, 12))
@@ -111,11 +111,11 @@ public class RightBlueVisionAutoOld extends ActionOpMode
                         .endTrajectory()
                         .strafeToConstantHeading(new Vector2d(-36,32))
                         .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                                 new SleepAction(0.25),
                                 motorControlActions.lowerClaw.release(),
                                 new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                         ))
                         .strafeTo(new Vector2d(-36, 35))
                         .strafeTo(new Vector2d(-55, 35))
@@ -130,11 +130,11 @@ public class RightBlueVisionAutoOld extends ActionOpMode
                         .strafeToSplineHeading(new Vector2d(-36,35), Math.toRadians(180))
                         .strafeToConstantHeading(new Vector2d(-39,35))
                         .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                                 new SleepAction(0.25),
                                 motorControlActions.lowerClaw.release(),
                                 new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                                motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                         ))
                         .strafeTo(new Vector2d(-36, 35))
                         .strafeTo(new Vector2d(-36, 12))
@@ -144,7 +144,7 @@ public class RightBlueVisionAutoOld extends ActionOpMode
                         .build();
 
 
-        motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+        motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
 
         /*
          * The INIT-loop:
@@ -159,7 +159,7 @@ public class RightBlueVisionAutoOld extends ActionOpMode
                 motorControl.lowerClaw.setPower(0.8);
             }
             if (gamepad2.right_bumper) {
-                motorControl.upperClaw.setPower(0.8);
+                motorControl.upperClaw.setPosition(0.8);
             }
 
             // Don't burn CPU cycles busy-looping in this sample
@@ -179,7 +179,7 @@ public class RightBlueVisionAutoOld extends ActionOpMode
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
 
-        motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+        motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
 
 
         switch (snapshotAnalysis)

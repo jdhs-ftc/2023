@@ -40,7 +40,7 @@ import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
  * and then snapshot that value for later use when the START
  * command is issued. The pipeline is re-used from SkystoneDeterminationExample
  */
-@Autonomous(group = "Blue", name = "LEFT Blue Vision Auto", preselectTeleOp = "TeleopFieldCentric")
+@Autonomous(group = "Blue", name = "LEFT Blue Vision Auto", preselectTeleOp = "Teleop Field Centric")
 public class LeftBlueVisionAuto extends AbstractVisionOpMode
 {
     @Override
@@ -56,52 +56,55 @@ public class LeftBlueVisionAuto extends AbstractVisionOpMode
     @Override
     public Action trajLeft(MecanumDrive drive, MotorControlActions motorControlActions) {
         return drive.actionBuilder(drive.pose)
+                .stopAndAdd(new SleepAction(1))
                         .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
-                        .strafeToConstantHeading(new Vector2d(15,35))
-                        .stopAndAdd(new SequentialAction(
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                                new SleepAction(0.25),
-                                motorControlActions.lowerClaw.release(),
-                                new SleepAction(0.1),
-                                motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
-                        ))
-                        .strafeTo(new Vector2d(12, 35))
-                        .strafeTo(new Vector2d(12, 36))
-                        .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
+                        //.strafeToConstantHeading(new Vector2d(15,35))
+                .stopAndAdd(new SequentialAction(
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
+                        new SleepAction(0.1),
+                        motorControlActions.lowerClaw.release(),
+                        new SleepAction(0.25),
+                        motorControlActions.slide.setTargetPosition(150)
+                ))
+                        //.strafeTo(new Vector2d(12, 35))
+                        .strafeTo(new Vector2d(12.1, 37.01))
+                        .splineToSplineHeading(new Pose2d(55,60,Math.toRadians(180.0000001)), Math.toRadians(0))
                         .build();
     }
 
     @Override
     public Action trajCenter(MecanumDrive drive, MotorControlActions motorControlActions) {
         return drive.actionBuilder(drive.pose)
+                .stopAndAdd(new SleepAction(1))
                 .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(270)))
-                .strafeToConstantHeading(new Vector2d(12,32))
+                //.strafeToConstantHeading(new Vector2d(12,32))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
-                        new SleepAction(0.25),
-                        motorControlActions.lowerClaw.release(),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        motorControlActions.lowerClaw.release(),
+                        new SleepAction(0.25),
+                        motorControlActions.slide.setTargetPosition(150)
                 ))
-                .strafeTo(new Vector2d(12, 36))
-                .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
+                .strafeTo(new Vector2d(12, 37.1))
+                .splineToSplineHeading(new Pose2d(55,60,Math.toRadians(180.0000001)), Math.toRadians(0))
                 .build();
     }
 
     @Override
     public Action trajRight(MecanumDrive drive, MotorControlActions motorControlActions) {
         return drive.actionBuilder(drive.pose)
+                .stopAndAdd(new SleepAction(1))
                 .strafeToSplineHeading(new Vector2d(12,33), Rotation2d.exp(Math.toRadians(180)))
-                .strafeToConstantHeading(new Vector2d(10,33))
+                //.strafeToConstantHeading(new Vector2d(10,33))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.1),
                         motorControlActions.lowerClaw.release(),
-                        new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        new SleepAction(0.25),
+                        motorControlActions.slide.setTargetPosition(150)
                 ))
-                .strafeTo(new Vector2d(12, 33))
-                .splineToSplineHeading(new Pose2d(60,60,Math.toRadians(180.0000001)), Math.toRadians(0))
+                //.strafeTo(new Vector2d(12, 33))
+                .splineToSplineHeading(new Pose2d(55,60,Math.toRadians(180.0000001)), Math.toRadians(0))
                 .build();
     }
 }

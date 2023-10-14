@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-@Autonomous(group = "Blue", name = "RIGHT Blue Vision Auto", preselectTeleOp = "TeleopFieldCentric")
+@Autonomous(group = "Blue", name = "RIGHT Blue Vision Auto", preselectTeleOp = "Teleop Field Centric")
 public class RightBlueVisionAuto extends AbstractVisionOpMode {
     @Override
     public PoseStorage.Team team() {
@@ -30,11 +30,11 @@ public class RightBlueVisionAuto extends AbstractVisionOpMode {
                 .strafeToSplineHeading(new Vector2d(-36,35), Rotation2d.exp(Math.toRadians(0)))
                 .strafeToConstantHeading(new Vector2d(-33,35))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.25),
                         motorControlActions.lowerClaw.release(),
                         new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                 ))
                 .strafeTo(new Vector2d(-36, 35))
                 .strafeTo(new Vector2d(-36, 12))
@@ -51,11 +51,11 @@ public class RightBlueVisionAuto extends AbstractVisionOpMode {
                 .endTrajectory()
                 .strafeToConstantHeading(new Vector2d(-36,32))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.25),
                         motorControlActions.lowerClaw.release(),
                         new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                 ))
                 .strafeTo(new Vector2d(-36, 35))
                 .strafeTo(new Vector2d(-55, 35))
@@ -71,11 +71,11 @@ public class RightBlueVisionAuto extends AbstractVisionOpMode {
                 .strafeToSplineHeading(new Vector2d(-36,35), Math.toRadians(180))
                 .strafeToConstantHeading(new Vector2d(-39,35))
                 .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.GRAB),
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
                         new SleepAction(0.25),
                         motorControlActions.lowerClaw.release(),
                         new SleepAction(0.1),
-                        motorControlActions.setCurrentMode(MotorControl.combinedMode.IDLE)
+                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.IDLE)
                 ))
                 .strafeTo(new Vector2d(-36, 35))
                 .strafeTo(new Vector2d(-36, 12))

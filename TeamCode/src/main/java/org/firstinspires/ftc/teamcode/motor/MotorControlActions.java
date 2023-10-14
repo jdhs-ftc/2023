@@ -45,11 +45,11 @@ public class MotorControlActions {
 
 
 
-    public Action setCurrentMode(MotorControl.combinedMode newMode) {
+    public Action setCurrentMode(MotorControl.combinedPreset newMode) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket t) {
-                motorControl.setCurrentMode(newMode);
+                motorControl.activatePreset(newMode);
                 return false;
             }
 
@@ -108,7 +108,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.arm.reset();
+                    motorControl.clawArm.reset();
                     return false;
                 }
 
@@ -123,7 +123,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.arm.setTargetPosition(position);
+                    motorControl.clawArm.setTargetPosition(position);
                     return false;
                 }
 
@@ -138,7 +138,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    return motorControl.arm.closeEnough();
+                    return motorControl.clawArm.closeEnough();
                 }
 
                 @Override
@@ -199,7 +199,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.lowerClaw.setPower(1);
+                    motorControl.lowerClaw.setPosition(1);
                     return false;
                 }
 
@@ -215,7 +215,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.lowerClaw.setPower(0);
+                    motorControl.lowerClaw.setPosition(0);
                     return false;
                 }
 
@@ -231,7 +231,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.upperClaw.setPower(1);
+                    motorControl.upperClaw.setPosition(1);
                     return false;
                 }
 
@@ -247,7 +247,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.upperClaw.setPower(0);
+                    motorControl.upperClaw.setPosition(0);
                     return false;
                 }
 

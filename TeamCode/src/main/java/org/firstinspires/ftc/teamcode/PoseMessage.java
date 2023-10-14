@@ -14,5 +14,15 @@ public final class PoseMessage {
         this.y = pose.position.y;
         this.heading = pose.heading.log();
     }
+
+    @Override
+    public String toString() {
+        return "PoseMessage{" +
+                "timestamp=" + timestamp +
+                ", x=" + x +
+                ", y=" + y +
+                ", heading=" + heading +
+                '}';
+    }
 }
 

@@ -229,10 +229,14 @@ public final class MecanumDrive {
 
         public FollowTrajectoryAction(TimeTrajectory t) {
             timeTrajectory = t;
-
-            List<Double> disps = com.acmerobotics.roadrunner.Math.range(
-                    0, t.path.length(),
-                    (int) Math.ceil(t.path.length() / 2));
+            List<Double> disps;
+            try {
+                disps = com.acmerobotics.roadrunner.Math.range(
+                        0, t.path.length(),
+                        (int) Math.ceil(t.path.length() / 2));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException(new PoseMessage(t.get(0).value()).toString() + e.toString());
+            }
             xPoints = new double[disps.size()];
             yPoints = new double[disps.size()];
             for (int i = 0; i < disps.size(); i++) {

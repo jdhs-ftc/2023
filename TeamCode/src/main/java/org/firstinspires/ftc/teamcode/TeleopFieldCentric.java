@@ -66,7 +66,7 @@ public class TeleopFieldCentric extends LinearOpMode {
         // Motor Init
         MotorControl motorControl = new MotorControl(hardwareMap);
 
-        motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+        motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
 
 
 
@@ -145,7 +145,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 //input = drive.pose.heading.inverse().plus(90).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
             }
             Vector2d controllerHeading = new Vector2d(-gamepad1.right_stick_y, -gamepad1.right_stick_x);
-            if (motorControl.getCurrentMode() == MotorControl.combinedMode.PLACE) {
+            if (motorControl.getCurrentPreset() == MotorControl.combinedPreset.PLACE) {
                 input = input.plus(new Vector2d(
                         0,
                         -gamepad2.right_stick_x * 0.25
@@ -210,25 +210,25 @@ public class TeleopFieldCentric extends LinearOpMode {
 
 
 
-            motorControl.lowerClaw.setPower(gamepad2.right_trigger);
-            motorControl.upperClaw.setPower(gamepad2.left_trigger);
+            motorControl.lowerClaw.setPosition(gamepad2.right_trigger + 0.1);
+            motorControl.upperClaw.setPosition(gamepad2.left_trigger);
 
 
 
             if (gamepad2.right_bumper && !previousGamepad2.right_bumper) { // if bumper just pressed
-                motorControl.setCurrentMode(MotorControl.combinedMode.PLACE);
+                motorControl.activatePreset(MotorControl.combinedPreset.PLACE);
             } else if (!gamepad2.right_bumper && previousGamepad2.right_bumper) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE); // if bumper just released
+                motorControl.activatePreset(MotorControl.combinedPreset.IDLE); // if bumper just released
             }
             if (gamepad2.left_bumper && !previousGamepad2.left_bumper) { // if bumper just pressed
-                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+                motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
             } else if (!gamepad2.left_bumper && previousGamepad2.left_bumper) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE); // if bumper just released
+                motorControl.activatePreset(MotorControl.combinedPreset.IDLE); // if bumper just released
             }
 
 
             if (gamepad2.dpad_down) {
-                motorControl.arm.setTargetPosition(-10);
+                motorControl.clawArm.setTargetPosition(-10);
                 motorControl.slide.setTargetPosition(-60);
             }
 
@@ -244,34 +244,34 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             // Combined Presets
             if (gamepad2.y) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.PLACE);
+                motorControl.activatePreset(MotorControl.combinedPreset.PLACE);
             }
             if (gamepad2.b) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+                motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
             }
             if (gamepad2.a) {
-                motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+                motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
             }
 
             if (gamepad2.square) {
-                motorControl.shooter.setPower(0);
+                motorControl.shooter.setPosition(0);
             } else {
-                motorControl.shooter.setPower(0.5);
+                motorControl.shooter.setPosition(0.5);
             }
 
 
 
 
             if (gamepad2.a && !previousGamepad2.a) {
-                motorControl.arm.armController.setOutputBounds(-0.5,0.5);
+                motorControl.clawArm.controller.setOutputBounds(-0.5,0.5);
             } else if (previousGamepad2.a && !gamepad2.a) {
-                motorControl.arm.armController.setOutputBounds(0,0.5);
+                motorControl.clawArm.controller.setOutputBounds(0,0.5);
             }
 
             if (gamepad2.left_bumper && !previousGamepad2.left_bumper) {
-                motorControl.arm.armController.setOutputBounds(-0.5,0.5);
+                motorControl.clawArm.controller.setOutputBounds(-0.5,0.5);
             } else if (previousGamepad2.left_bumper && !gamepad2.left_bumper) {
-                motorControl.arm.armController.setOutputBounds(0,0.5);
+                motorControl.clawArm.controller.setOutputBounds(0,0.5);
             }
 
 
@@ -301,16 +301,16 @@ public class TeleopFieldCentric extends LinearOpMode {
             telemetry.addData("controllerHeading", controllerHeading.angleCast().log());
             telemetry.addData("loopTimeMs", timeDifference);
             telemetry.addData("loopTimeHz", 1000.0 / timeDifference);
-            telemetry.addData("armTarget", motorControl.arm.getTargetPosition());
-            telemetry.addData("armPosition", motorControl.arm.motor.getCurrentPosition());
+            telemetry.addData("armTarget", motorControl.clawArm.getTargetPosition());
+            telemetry.addData("armPosition", motorControl.clawArm.motor.getCurrentPosition());
             telemetry.addData("slideTarget", motorControl.slide.getTargetPosition());
             telemetry.addData("slidePosition", motorControl.slide.motor.getCurrentPosition());
-            telemetry.addData("clawPower", motorControl.lowerClaw.servo.getPosition());
+            telemetry.addData("clawPower", motorControl.lowerClaw.getPosition());
             telemetry.addData("leftClawHoldingPixel", lowerClawHoldingPixel);
-            telemetry.addData("upperClawPower", motorControl.upperClaw.servo.getPosition());
+            telemetry.addData("upperClawPower", motorControl.upperClaw.getPosition());
             telemetry.addData("upperClawHoldingPixel", upperClawHoldingPixel);
-            telemetry.addData("currentMode", motorControl.getCurrentMode());
-            telemetry.addData("armOverCurrent", motorControl.arm.motor.isOverCurrent());
+            telemetry.addData("currentMode", motorControl.getCurrentPreset());
+            telemetry.addData("armOverCurrent", motorControl.clawArm.motor.isOverCurrent());
             telemetry.update();
         }
     }

@@ -86,7 +86,7 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
         Action trajRight = trajRight(drive, motorControlActions);
 
 
-        motorControl.setCurrentMode(MotorControl.combinedMode.GRAB);
+        motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
 
         /*
          * The INIT-loop:
@@ -100,10 +100,10 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
              */
 
             if (gamepad2.left_bumper) {
-                motorControl.lowerClaw.setPower(0.8);
+                motorControl.lowerClaw.setPosition(0.8);
             }
             if (gamepad2.right_bumper) {
-                motorControl.upperClaw.setPower(0.8);
+                motorControl.upperClaw.setPosition(0.8);
             }
 
             // Don't burn CPU cycles busy-looping in this sample
@@ -123,7 +123,7 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
 
-        motorControl.setCurrentMode(MotorControl.combinedMode.IDLE);
+        motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
 
 
         switch (snapshotAnalysis)
