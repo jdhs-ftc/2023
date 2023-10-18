@@ -21,29 +21,6 @@ public class MotorControlActions {
         this.upperClaw = new UpperClaw();
     }
 
-    public static class RaceParallelCommand implements Action {
-        private final Action[] actions;
-
-        public RaceParallelCommand(Action... actions) {
-            this.actions = actions;
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket t) {
-            boolean finished = true;
-            for (Action action : actions) finished = finished && action.run(t);
-            return finished;
-        }
-
-        @Override
-        public void preview(@NonNull Canvas canvas) {
-            for (Action action : actions) action.preview(canvas);
-        }
-
-
-    }
-
-
 
     public Action setCurrentMode(MotorControl.combinedPreset newMode) {
         return new Action() {
@@ -199,7 +176,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.lowerClaw.setPosition(1);
+                    motorControl.claw.setPosition(1);
                     return false;
                 }
 
@@ -215,7 +192,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.lowerClaw.setPosition(0);
+                    motorControl.claw.setPosition(0);
                     return false;
                 }
 
@@ -231,7 +208,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.upperClaw.setPosition(1);
+                    motorControl.hookArm.setPosition(1);
                     return false;
                 }
 
@@ -247,7 +224,7 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.upperClaw.setPosition(0);
+                    motorControl.hookArm.setPosition(0);
                     return false;
                 }
 

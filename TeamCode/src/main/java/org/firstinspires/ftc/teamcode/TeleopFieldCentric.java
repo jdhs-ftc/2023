@@ -11,6 +11,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.PIDFController;
@@ -30,8 +31,16 @@ public class TeleopFieldCentric extends LinearOpMode {
     LynxModule CONTROL_HUB;
     LynxModule EXPANSION_HUB;
     boolean fieldCentric = true;
-    boolean lowerClawHoldingPixel = false;
-    boolean upperClawHoldingPixel = false;
+    public enum LiftState {
+        IDLE,
+        PIXEL_TO_HOOK,
+        HOOK_TO_BACKDROP_HOLD,
+        HOOK_TO_BACKDROP_WAIT, CLAW_RELEASE, PLACE
+    }
+    LiftState liftState = LiftState.IDLE;
+    ElapsedTime liftTimer = new ElapsedTime();
+    boolean pixelInClaw = false;
+    boolean pixelInHook = false;
     Gamepad currentGamepad1 = new Gamepad();
     Gamepad currentGamepad2 = new Gamepad();
     Gamepad previousGamepad1 = new Gamepad();
@@ -206,33 +215,11 @@ public class TeleopFieldCentric extends LinearOpMode {
 
 
 
-            // CLAW
+            // LIFT
 
 
 
-            motorControl.lowerClaw.setPosition(gamepad2.right_trigger + 0.1);
-            motorControl.upperClaw.setPosition(gamepad2.left_trigger);
-
-
-
-            if (gamepad2.right_bumper && !previousGamepad2.right_bumper) { // if bumper just pressed
-                motorControl.activatePreset(MotorControl.combinedPreset.PLACE);
-            } else if (!gamepad2.right_bumper && previousGamepad2.right_bumper) {
-                motorControl.activatePreset(MotorControl.combinedPreset.IDLE); // if bumper just released
-            }
-            if (gamepad2.left_bumper && !previousGamepad2.left_bumper) { // if bumper just pressed
-                motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
-            } else if (!gamepad2.left_bumper && previousGamepad2.left_bumper) {
-                motorControl.activatePreset(MotorControl.combinedPreset.IDLE); // if bumper just released
-            }
-
-
-            if (gamepad2.dpad_down) {
-                motorControl.clawArm.setTargetPosition(-10);
-                motorControl.slide.setTargetPosition(-60);
-            }
-
-            // Slide
+            // Slide (Manual)
             if (motorControl.slide.getTargetPosition() >= 1000 && -gamepad2.left_stick_y > 0) {
                 motorControl.slide.setTargetPosition(999);
 
@@ -241,41 +228,95 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             } else { motorControl.slide.setTargetPosition(motorControl.slide.getTargetPosition() + (-gamepad2.left_stick_y * 40));}
 
-
-            // Combined Presets
-            if (gamepad2.y) {
-                motorControl.activatePreset(MotorControl.combinedPreset.PLACE);
+            switch (liftState) {
+                case IDLE:
+                    if (pixelInClaw && !pixelInHook && (gamepad2.left_trigger > 0.5 || gamepad2.right_trigger > 0.5)) {
+                        liftState = LiftState.PIXEL_TO_HOOK;
+                    }
+                    if (pixelInHook && gamepad2.right_trigger > 0.5) {
+                        liftState = LiftState.HOOK_TO_BACKDROP_HOLD;
+                        liftTimer.reset();
+                        motorControl.clawArm.moveDown();
+                        motorControl.hookArm.setPosition(0.7); // TODO TUNE
+                        motorControl.slide.setTargetPosition(1000);
+                    }
+                    if (pixelInHook && gamepad2.y) {
+                        liftState = LiftState.HOOK_TO_BACKDROP_WAIT;
+                        liftTimer.reset();
+                        motorControl.clawArm.moveDown();
+                        motorControl.hookArm.setPosition(0.7); // TODO TUNE
+                        motorControl.slide.setTargetPosition(1000);
+                    }
+                    if (pixelInHook && gamepad2.circle) {
+                        liftState = LiftState.HOOK_TO_BACKDROP_WAIT;
+                        liftTimer.reset();
+                        motorControl.clawArm.moveDown();
+                        motorControl.hookArm.setPosition(0.7); // TODO TUNE
+                    }
+                    break;
+                case PIXEL_TO_HOOK:
+                    motorControl.clawArm.moveHook();
+                    if (motorControl.clawArm.closeEnough() && Math.abs(motorControl.slide.getTargetPosition()) - 60 < 0 && motorControl.slide.closeEnough()) {
+                        pixelInClaw = false;
+                        liftState = LiftState.CLAW_RELEASE;
+                        liftTimer.reset();
+                    }
+                    break;
+                case CLAW_RELEASE:
+                    if (liftTimer.milliseconds() > 250) {
+                        pixelInHook = true;
+                        motorControl.clawArm.moveDown();
+                        liftState = LiftState.IDLE;
+                    }
+                case HOOK_TO_BACKDROP_HOLD:
+                    if (motorControl.slide.closeEnough() && liftTimer.milliseconds() > 100 && !(gamepad2.right_trigger > 0.5)) {
+                        gamepad2.rumbleBlips(1);
+                        motorControl.hookArm.setPosition(0);
+                        liftState = LiftState.PLACE;
+                        liftTimer.reset();
+                    }
+                    break;
+                case HOOK_TO_BACKDROP_WAIT:
+                    if (gamepad2.right_trigger > 0.5) {
+                        liftState = LiftState.HOOK_TO_BACKDROP_HOLD;
+                    }
+                    break;
+                case PLACE:
+                    if (liftTimer.milliseconds() > 250) {
+                        pixelInHook = false;
+                        motorControl.hookArm.setPosition(1);
+                        motorControl.clawArm.moveDown();
+                        motorControl.slide.setTargetPosition(0);
+                        liftState = LiftState.IDLE;
+                    }
+                    break;
+                default:
+                    liftState = LiftState.IDLE;
+                    break;
             }
-            if (gamepad2.b) {
-                motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
-            }
-            if (gamepad2.a) {
-                motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
-            }
-
-            if (gamepad2.square) {
-                motorControl.shooter.setPosition(0);
+            if (pixelInClaw) {
+                motorControl.claw.setPosition(0.5);
             } else {
-                motorControl.shooter.setPosition(0.5);
+                motorControl.claw.setPosition(1);
+            }
+            if (gamepad2.right_bumper && !previousGamepad2.right_bumper) {
+                pixelInClaw = !pixelInClaw;
             }
 
-
-
-
-            if (gamepad2.a && !previousGamepad2.a) {
-                motorControl.clawArm.controller.setOutputBounds(-0.5,0.5);
-            } else if (previousGamepad2.a && !gamepad2.a) {
-                motorControl.clawArm.controller.setOutputBounds(0,0.5);
+            // Reset
+            if (gamepad2.dpad_down) {
+                liftState = LiftState.IDLE;
+                motorControl.clawArm.setTargetPosition(0);
+                motorControl.slide.setTargetPosition(0);
+                motorControl.hookArm.setPosition(1);
             }
 
-            if (gamepad2.left_bumper && !previousGamepad2.left_bumper) {
-                motorControl.clawArm.controller.setOutputBounds(-0.5,0.5);
-            } else if (previousGamepad2.left_bumper && !gamepad2.left_bumper) {
-                motorControl.clawArm.controller.setOutputBounds(0,0.5);
+            // Shooter
+            if (gamepad2.square) {
+                motorControl.shooter.setPower(-1);
+            } else {
+                motorControl.shooter.setPower(0);
             }
-
-
-
 
             //gamepad1.rumble(CONTROL_HUB.getCurrent(CurrentUnit.AMPS),EXPANSION_HUB.getCurrent(CurrentUnit.AMPS),Gamepad.RUMBLE_DURATION_CONTINUOUS);
             if (motorControl.isOverCurrent()) {
@@ -305,11 +346,10 @@ public class TeleopFieldCentric extends LinearOpMode {
             telemetry.addData("armPosition", motorControl.clawArm.motor.getCurrentPosition());
             telemetry.addData("slideTarget", motorControl.slide.getTargetPosition());
             telemetry.addData("slidePosition", motorControl.slide.motor.getCurrentPosition());
-            telemetry.addData("clawPower", motorControl.lowerClaw.getPosition());
-            telemetry.addData("leftClawHoldingPixel", lowerClawHoldingPixel);
-            telemetry.addData("upperClawPower", motorControl.upperClaw.getPosition());
-            telemetry.addData("upperClawHoldingPixel", upperClawHoldingPixel);
+            telemetry.addData("clawPower", motorControl.claw.getPosition());
+            telemetry.addData("upperClawPower", motorControl.hookArm.getPosition());
             telemetry.addData("currentMode", motorControl.getCurrentPreset());
+            telemetry.addData("stateMachineState", liftState);
             telemetry.addData("armOverCurrent", motorControl.clawArm.motor.isOverCurrent());
             telemetry.update();
         }

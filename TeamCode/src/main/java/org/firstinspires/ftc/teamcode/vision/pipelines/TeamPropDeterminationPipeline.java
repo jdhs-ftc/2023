@@ -12,6 +12,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class TeamPropDeterminationPipeline extends OpenCvPipeline
 {
     boolean isBlue = true; // CHANGE THIS FOR SIM
+    boolean useTelemetry = true;
     private final Telemetry telemetry;
 
     /*
@@ -108,6 +109,9 @@ public class TeamPropDeterminationPipeline extends OpenCvPipeline
 
     public void setBlue(Boolean newIsBlue) {
         isBlue = newIsBlue;
+    }
+    public void setUseTelemetry(Boolean useTelemetry) {
+        this.useTelemetry = useTelemetry;
     }
 
     @Override
@@ -291,12 +295,14 @@ public class TeamPropDeterminationPipeline extends OpenCvPipeline
                     GREEN, // The color the rectangle is drawn in
                     -1); // Negative thickness means solid fill
         }
-        telemetry.addData("position", position);
-        telemetry.addData("avg1", avg1);
-        telemetry.addData("avg2", avg2);
-        telemetry.addData("avg3", avg3);
-        telemetry.addData("confidence", confidence);
-        telemetry.update();
+        if (useTelemetry) {
+            telemetry.addData("position", position);
+            telemetry.addData("avg1", avg1);
+            telemetry.addData("avg2", avg2);
+            telemetry.addData("avg3", avg3);
+            telemetry.addData("confidence", confidence);
+            telemetry.update();
+        }
         /*
          * Render the 'input' buffer to the viewport. But note this is not
          * simply rendering the raw camera feed, because we called functions

@@ -27,6 +27,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ActionOpMode;
+import org.firstinspires.ftc.teamcode.Helpers;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
@@ -37,9 +38,22 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
+/** <h3>Abstract class for vision-based autonomous</h3>
+ * Every vision auto is basically the same, so we use an Abstract class here
+ * this allows us to separate the vision code from the actual RR trajectories
+ * to make a new auto, just make a class that implements AbstractVisionOpMode
+ */
 public abstract class AbstractVisionOpMode extends ActionOpMode
 {
+    /**
+     * Is this a red or a blue autonomous?
+     * @return the team
+     */
     public abstract PoseStorage.Team team();
+    /**
+     * Starting Position of the trajectories
+     * @return the starting pose
+     */
     public abstract Pose2d startPose();
     public abstract Action trajLeft(MecanumDrive drive, MotorControlActions motorControlActions);
     public abstract Action trajCenter(MecanumDrive drive, MotorControlActions motorControlActions);
@@ -100,10 +114,10 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
              */
 
             if (gamepad2.left_bumper) {
-                motorControl.lowerClaw.setPosition(0.8);
+                motorControl.claw.setPosition(0.8);
             }
             if (gamepad2.right_bumper) {
-                motorControl.upperClaw.setPosition(0.8);
+                motorControl.hookArm.setPosition(0.8);
             }
 
             // Don't burn CPU cycles busy-looping in this sample
@@ -130,7 +144,7 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
         {
             case LEFT:
             {
-                runBlocking(new MotorControlActions.RaceParallelCommand(
+                runBlocking(new Helpers.RaceParallelCommand(
                         trajLeft,
                         motorControlActions.update()
                 ));
@@ -139,7 +153,7 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
 
             case CENTER:
             {
-                runBlocking(new MotorControlActions.RaceParallelCommand(
+                runBlocking(new Helpers.RaceParallelCommand(
                         trajCenter,
                         motorControlActions.update()
                 ));
@@ -149,7 +163,7 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
             case RIGHT:
             {
 
-                runBlocking(new MotorControlActions.RaceParallelCommand(
+                runBlocking(new Helpers.RaceParallelCommand(
                         trajRight,
                         motorControlActions.update()
                 ));

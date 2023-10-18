@@ -8,11 +8,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.ActionOpMode;
+import org.firstinspires.ftc.teamcode.Helpers.RaceParallelCommand;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-import org.firstinspires.ftc.teamcode.motor.MotorControlActions.RaceParallelCommand;
 
 @Autonomous(name = "TestAutoOpMode", group = "Test")
 @Disabled

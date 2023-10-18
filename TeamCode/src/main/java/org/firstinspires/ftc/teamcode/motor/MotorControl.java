@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.motor;
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -15,12 +16,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * This class is used to control the motor systems on the robot.
  */
 public class MotorControl {
-    public Servo lowerClaw;
-    public Servo upperClaw;
+    public Servo claw;
+    public Servo hookArm;
     public Slide slide;
     public ClawArm clawArm;
-    public HookArm hookArm;
-    public Servo shooter;
+    public CRServo shooter;
 
     /**
      * Gets the current state of the arm and slide together.
@@ -37,6 +37,18 @@ public class MotorControl {
      */
     public void activatePreset(combinedPreset targetPreset) {
         currentPreset = targetPreset;
+        switch (getCurrentPreset()) {
+            case IDLE:
+                clawArm.moveDown();
+                slide.setTargetPosition(-40);
+                break;
+            case PLACE:
+                clawArm.moveDown();
+                hookArm.setPosition(1);
+                slide.setTargetPosition(1000);
+                break;
+
+        }
     }
 
 
@@ -62,16 +74,15 @@ public class MotorControl {
      */
     public MotorControl(@NonNull HardwareMap hardwareMap) {
         clawArm = new ClawArm(hardwareMap);
-        hookArm = new HookArm(hardwareMap);
         slide = new Slide(hardwareMap);
 
 
-        lowerClaw = hardwareMap.get(Servo.class, "claw");
-        upperClaw = hardwareMap.get(Servo.class, "upperClaw");
-        shooter = hardwareMap.get(Servo.class, "shooter");
-        lowerClaw.setPosition(0);
-        upperClaw.setPosition(0);
-        shooter.setPosition(0.5); // todo; change hardwaremap
+        claw = hardwareMap.get(Servo.class, "claw");
+        hookArm = hardwareMap.get(Servo.class, "hookArm");
+        shooter = hardwareMap.get(CRServo.class, "shooter");
+        claw.setPosition(0);
+        hookArm.setPosition(1);
+        shooter.setPower(0);
 
         activatePreset(combinedPreset.GRAB);
     }
@@ -80,27 +91,9 @@ public class MotorControl {
      * This class updates the arm and slide motors to match the current state.
      */
     public void update() {
-        if (getCurrentPreset() != oldMode) {
-            switch (getCurrentPreset()) {
-                case GRAB:
-                    slide.setTargetPosition(-40);
-                    clawArm.moveDown();
-                    break;
-                case IDLE:
-                    clawArm.moveDown();
-                    slide.setTargetPosition(-40);
-                    break;
-                case PLACE:
-                    clawArm.moveOut();
-                    slide.setTargetPosition(750);
-                    break;
 
-            }
-        }
-        oldMode = getCurrentPreset();
         slide.update();
         clawArm.update();
-
     }
 
 
@@ -174,16 +167,16 @@ public class MotorControl {
             }
         }
 
-        public void moveOut() {
+        public void moveLowPlace() {
             setTargetPosition(60);
-        }
+        } // TODO: TUNE
 
         public void moveDown() {
             setTargetPosition(0);
         }
 
-        public void moveTop() {
-            setTargetPosition(120);
+        public void moveHook() {
+            setTargetPosition(130);
         }
 
         public boolean closeEnough() {
@@ -194,79 +187,6 @@ public class MotorControl {
             return motor.isOverCurrent();
         }
     }
-
-    /**
-     * Lower arm control
-     */
-    @Config
-    public static class HookArm extends ControlledMotor{
-        public static PIDFController.PIDCoefficients ARM_PID = new PIDFController.PIDCoefficients(0.05, 0.0, 0.01);
-        public final PIDFController armController = new PIDFController(ARM_PID);
-
-        public double getTargetPosition() {
-            return targetPosition;
-        }
-
-        public void setTargetPosition(double targetPosition) {
-            this.targetPosition = targetPosition;
-        }
-
-        private double targetPosition = 0;
-
-        public HookArm(@NonNull HardwareMap hardwareMap) {
-            motor = hardwareMap.get(DcMotorEx.class, "hookArm"); //TODO: set hardwaremap
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            motor.setCurrentAlert(4.4, CurrentUnit.AMPS);
-            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            armController.setOutputBounds(-0.5, 0.5);
-        }
-
-        /**
-         * Stop arm and reset encoder
-         */
-        public void reset() {
-            motor.setPower(0);
-            targetPosition = 0;
-            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-
-
-        /**
-         * This updates the arm motor to match the current state. This should be run in a loop.
-         */
-        public void update() {
-            armController.targetPosition = targetPosition;
-            if (!motor.isOverCurrent()) {
-                motor.setPower(armController.update(motor.getCurrentPosition()));
-            } else {
-                motor.setPower(0);
-
-            }
-        }
-
-        public void moveOut() {
-            setTargetPosition(60);
-        }
-
-        public void moveDown() {
-            setTargetPosition(0);
-        }
-
-        public void moveTop() {
-            setTargetPosition(120);
-        }
-
-        public boolean closeEnough() {
-            return Math.abs(motor.getCurrentPosition() - targetPosition) < 2;
-        }
-
-        public boolean isOverCurrent() {
-            return motor.isOverCurrent();
-        }
-    }
-
     /**
      * This class controls the slide motor.
      */

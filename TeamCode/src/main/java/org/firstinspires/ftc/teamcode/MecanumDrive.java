@@ -50,7 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class MecanumDrive {
+public class MecanumDrive {
     public static class Params {
         // drive model parameters
         public double inPerTick = 0.000544563442;
@@ -105,7 +105,7 @@ public final class MecanumDrive {
     public final Localizer localizer;
     public Pose2d pose;
 
-    private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
+    public final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
     public class DriveLocalizer implements Localizer {
         public final Encoder leftFront, leftRear, rightRear, rightFront;
@@ -193,11 +193,11 @@ public final class MecanumDrive {
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         imu = hardwareMap.get(IMU.class, "imu");
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot( // TODO: fix post redesign
                 RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
-        imu.resetYaw();
+        imu.resetYaw(); // TODO: report bug. I had to add this line
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
