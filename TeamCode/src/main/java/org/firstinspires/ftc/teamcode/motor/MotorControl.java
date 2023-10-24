@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,6 +22,7 @@ public class MotorControl {
     public Slide slide;
     public ClawArm clawArm;
     public CRServo shooter;
+    public ColorSensor color;
 
     /**
      * Gets the current state of the arm and slide together.
@@ -80,9 +82,11 @@ public class MotorControl {
         claw = hardwareMap.get(Servo.class, "claw");
         hookArm = hardwareMap.get(Servo.class, "hookArm");
         shooter = hardwareMap.get(CRServo.class, "shooter");
-        claw.setPosition(0);
+        claw.setPosition(1);
         hookArm.setPosition(1);
         shooter.setPower(0);
+
+        color = hardwareMap.get(ColorSensor.class, "color");
 
         activatePreset(combinedPreset.GRAB);
     }

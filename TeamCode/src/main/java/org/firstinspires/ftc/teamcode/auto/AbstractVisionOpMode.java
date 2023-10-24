@@ -32,12 +32,13 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
+import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
+import org.firstinspires.ftc.teamcode.vision.PipelineProcessor;
 import org.firstinspires.ftc.teamcode.vision.pipelines.TeamPropDeterminationPipeline;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.openftc.easyopencv.OpenCvWebcam;
-
+// TODO: USE APRILTAGS
 /** <h3>Abstract class for vision-based autonomous</h3>
  * Every vision auto is basically the same, so we use an Abstract class here
  * this allows us to separate the vision code from the actual RR trajectories
@@ -61,6 +62,9 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
     OpenCvWebcam webcam;
     TeamPropDeterminationPipeline pipeline;
     TeamPropDeterminationPipeline.PropPosition snapshotAnalysis = TeamPropDeterminationPipeline.PropPosition.LEFT; // default
+    AprilTagProcessor aprilTag;
+    PipelineProcessor pipelineProcessor;
+    VisionPortal myVisionPortal;
 
     @Override
     public void runOpMode()
@@ -69,31 +73,30 @@ public abstract class AbstractVisionOpMode extends ActionOpMode
         MotorControlActions motorControlActions = new MotorControlActions(motorControl);
         runBlocking(motorControlActions.lowerClaw.grab());
 
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+
         pipeline = new TeamPropDeterminationPipeline(telemetry);
         pipeline.setBlue(team() == PoseStorage.Team.BlUE);
-        webcam.setPipeline(pipeline);
+        pipelineProcessor = new PipelineProcessor(pipeline);
 
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                webcam.startStreaming(640,480, OpenCvCameraRotation.UPRIGHT);
-            }
+        aprilTag = new AprilTagProcessor.Builder()
+                .build();
 
-            @Override
-            public void onError(int errorCode) {}
-        });
+        CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
-        FtcDashboard.getInstance().startCameraStream(webcam, 30);
+        myVisionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessors(pipelineProcessor, aprilTag, cameraStreamProcessor)
+                .build();
 
+        FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
 
+        //FtcDashboard.getInstance().startCameraStream(myVisionPortal, 30);
 
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(12, 63, Math.toRadians(-90)));
-        drive.pose = startPose();
+
+
+        //AprilTagDrive drive = new AprilTagDrive(hardwareMap, startPose(), aprilTag);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, startPose());
 
         Action trajLeft = trajLeft(drive, motorControlActions);
         Action trajCenter = trajCenter(drive, motorControlActions);
