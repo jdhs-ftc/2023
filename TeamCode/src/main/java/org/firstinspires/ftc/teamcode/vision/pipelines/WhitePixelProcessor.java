@@ -58,7 +58,7 @@ public class WhitePixelProcessor implements VisionProcessor {
      * min and max values here for now, meaning
      * that all pixels will be shown.
      */
-    public Scalar lower = new Scalar(150, 109, 113);
+    public Scalar lower = new Scalar(160, 109, 113);
     public Scalar upper = new Scalar(255, 128, 136);
     public double canny1 = 100;
     public double canny2 = 500;
@@ -191,11 +191,11 @@ public class WhitePixelProcessor implements VisionProcessor {
         detectedPixelCandidate = new Rect();
         for (int i = 0; i != boundRect.length; i++) {
             double aspectRatio = (double) boundRect[i].height / (double) boundRect[i].width;
-            if ((0.4 <= aspectRatio && aspectRatio <= 0.75) && (boundRect[i].width > 90 && boundRect[i].width < 200) && (boundRect[i].x > 100 || boundRect[i].y < 400))  {
+            if ((aspectRatio <= 0.75) && (boundRect[i].width > 90 && boundRect[i].width < 200) && (boundRect[i].x > 100 || boundRect[i].y < 400))  {
                 if (boundRect[i].width > detectedPixelCandidate.width) {
                     detectedPixelCandidate = boundRect[i];
                     Imgproc.rectangle(maskedInputMat, boundRect[i], new Scalar(0, 255, 0));
-                    Imgproc.putText(maskedInputMat, Integer.toString(boundRect[i].x), new Point(boundRect[i].x,boundRect[i].y), 0, 1, new Scalar(0, 76.9, 89.8));
+                    Imgproc.putText(maskedInputMat, Integer.toString(boundRect[i].x), new Point(boundRect[i].x,boundRect[i].y), 0, 1, new Scalar(255, 255, 255));
                 } else {
                     Imgproc.rectangle(maskedInputMat, boundRect[i], new Scalar(255, 0, 0));
                     //Imgproc.putText(maskedInputMat, Double.toString(Math.round(100.0 * (double) boundRect[i].height / (double) boundRect[i].width) / 100.0), new Point(boundRect[i].x,boundRect[i].y), 0, 1, new Scalar(0, 76.9, 89.8));

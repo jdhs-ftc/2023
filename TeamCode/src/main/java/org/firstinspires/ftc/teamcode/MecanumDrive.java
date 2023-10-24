@@ -193,8 +193,8 @@ public class MecanumDrive {
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         imu = hardwareMap.get(IMU.class, "imu");
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot( // TODO: fix post redesign
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD));
         imu.initialize(parameters);
         imu.resetYaw(); // TODO: report bug. I had to add this line

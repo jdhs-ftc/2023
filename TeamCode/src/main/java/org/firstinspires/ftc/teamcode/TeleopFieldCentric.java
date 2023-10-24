@@ -29,7 +29,7 @@ public class TeleopFieldCentric extends LinearOpMode {
     // TODO: PhotonFTC
 
     // Declare a PIDF Controller to regulate heading
-    private final PIDFController.PIDCoefficients HEADING_PID_JOYSTICK = new PIDFController.PIDCoefficients(0.15, 0.0, 0.0);
+    private final PIDFController.PIDCoefficients HEADING_PID_JOYSTICK = new PIDFController.PIDCoefficients(1, 0.0, 0.0);
     private final PIDFController joystickHeadingController = new PIDFController(HEADING_PID_JOYSTICK);
     private final PIDFController.PIDCoefficients PIXEL_PID_JOYSTICK = new PIDFController.PIDCoefficients(0.002, 0.0, 0.0);
     private final PIDFController pixelHeadingController = new PIDFController(PIXEL_PID_JOYSTICK);
@@ -157,7 +157,7 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             //Pose2d poseEstimate = drive.pose;
             double rotationAmount = -drive.pose.heading.log(); // Rotation2d.log() makes it into a double in radians.
-            if (fieldCentric) {
+            if (fieldCentric && !gamepad1.right_stick_button) {
                 if (PoseStorage.currentTeam == PoseStorage.Team.BlUE) {
                     //input = drive.pose.heading.inverse().plus(Math.toRadians(90)).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
                     rotationAmount = rotationAmount - Math.toRadians(90);
@@ -177,7 +177,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 ));
             }
 
-            if (controllerHeading.minus(new Vector2d(0.0,0.0)).norm() < 0.7) {
+            if (Math.abs(controllerHeading.x + controllerHeading.y) < 0.7) {
                 drive.setDrivePowers(
                         new PoseVelocity2d(
                                 new Vector2d(
@@ -191,7 +191,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 // Set the target heading for the heading controller to our desired angle
 
 
-                joystickHeadingController.targetPosition = controllerHeading.angleCast().log() + Math.toRadians(180);
+                joystickHeadingController.targetPosition = controllerHeading.norm() + Math.toRadians(180);
 
 
                 // Set desired angular velocity to the heading controller output + angular
@@ -211,11 +211,13 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             }
             if (gamepad1.right_stick_button && whitePixelProcessor.getDetectedPixel() != null) {
-                pixelHeadingController.targetPosition =  300; // pixel aligned with claw
+                double x = whitePixelProcessor.getDetectedPixel().x;
+                double y = whitePixelProcessor.getDetectedPixel().y;
+                pixelHeadingController.targetPosition =  360; // pixel aligned with claw
 
                 // Set desired angular velocity to the heading controller output + angular
                 // velocity feedforward
-                double headingInput = (pixelHeadingController.update(whitePixelProcessor.getDetectedPixel().x));
+                double headingInput = (pixelHeadingController.update(x) * (y / 320));
                 drive.setDrivePowers(
                         new PoseVelocity2d(
                                 new Vector2d(
@@ -270,7 +272,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                     break;
                 case PIXEL_TO_HOOK:
                     motorControl.clawArm.moveHook();
-                    if (motorControl.clawArm.closeEnough() && Math.abs(motorControl.slide.getTargetPosition()) - 60 < 0 && motorControl.slide.closeEnough()) {
+                    if (motorControl.clawArm.closeEnough() && Math.abs(motorControl.slide.getTargetPosition()) - 65 < 0 && motorControl.slide.closeEnough()) {
                         pixelInClaw = false;
                         liftState = LiftState.CLAW_RELEASE;
                         liftTimer.reset();
@@ -348,8 +350,10 @@ public class TeleopFieldCentric extends LinearOpMode {
             double colorAlpha = motorControl.color.alpha();
             double pad2rumble;
 
-
-            if (colorAlpha > 10000 && (motorControl.clawArm.getTargetPosition() == 0) && motorControl.clawArm.closeEnough()) {
+            if (gamepad2.left_bumper || gamepad1.square) {
+                pixelInClaw = false;
+            }
+            if (colorAlpha > 10000 && (motorControl.clawArm.getTargetPosition() == 0) && motorControl.clawArm.closeEnough() && !gamepad2.left_bumper && !gamepad1.square) {
                 pixelInClaw = true;
             }
             if (colorAlpha > 200 && !pixelInClaw) {
