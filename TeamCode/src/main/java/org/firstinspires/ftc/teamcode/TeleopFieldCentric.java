@@ -352,12 +352,12 @@ public class TeleopFieldCentric extends LinearOpMode {
             if (colorAlpha > 10000 && (motorControl.clawArm.getTargetPosition() == 0) && motorControl.clawArm.closeEnough()) {
                 pixelInClaw = true;
             }
-            if (colorAlpha > 200) {
+            if (colorAlpha > 200 && !pixelInClaw) {
                 pad2rumble = Math.log10(colorAlpha) / 6;
             } else {
                 pad2rumble = 0;
             }
-            gamepad2.rumble(pad2rumble, colorAlpha, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+            gamepad2.rumble(pad2rumble, pad2rumble, Gamepad.RUMBLE_DURATION_CONTINUOUS);
 
 
             // Print pose to telemetry
