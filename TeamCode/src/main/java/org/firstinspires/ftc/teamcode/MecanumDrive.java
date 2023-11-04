@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.DisplacementTrajectory;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.HolonomicController;
 import com.acmerobotics.roadrunner.MecanumKinematics;
@@ -54,31 +55,31 @@ public class MecanumDrive {
     public static class Params {
         // drive model parameters
         public double inPerTick = 0.000544563442;
-        public double lateralInPerTick = 0.000427893275;
-        public double trackWidthTicks = 23322.1443182;//48852.1340223;
+        public double lateralInPerTick = 0.000459754362529135; //0.000427893275;
+        public double trackWidthTicks = 22482.87104190852; //23322.1443182;//48852.1340223;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.70409251729; //0.9812460433137571;
-        public double kV = 0.00010510956; //0.185767223337712246
-        public double kA = 0.00001; //increase by like 0.00001; to make the graphs line up
+        public double kS = 0.452945804254; //0.70409251729; //0.9812460433137571;
+        public double kV = 0.000107265716; //0.00010510956; //0.185767223337712246
+        public double kA = 0.00001; //0.00001; //increase by like 0.00001; to make the graphs line up
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 50;
+        public double maxWheelVel = 30;
         public double minProfileAccel = -30;
-        public double maxProfileAccel = 50;
+        public double maxProfileAccel = 30;
 
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0.0; // TODO: tune not sure where these went??
-        public double lateralGain = 0.0;
-        public double headingGain = 0.0; // shared with turn
+        public double axialGain = 2.0;
+        public double lateralGain = 2.0;
+        public double headingGain = 2.0; // shared with turn
 
-        public double axialVelGain = 0.0;
-        public double lateralVelGain = 0.0;
-        public double headingVelGain = 0.0; // shared with turn
+        public double axialVelGain = 0.5;
+        public double lateralVelGain = 1.0;
+        public double headingVelGain = 0.5; // shared with turn
     }
 
     public static Params PARAMS = new Params();
@@ -432,11 +433,100 @@ public class MecanumDrive {
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
         return new TrajectoryActionBuilder(
                 TurnAction::new,
-                FollowTrajectoryAction::new,
+                FollowTrajectoryAsPathAction::new,//FollowTrajectoryAction::new,
                 beginPose, 1e-6, 0.0,
                 defaultTurnConstraints,
                 defaultVelConstraint, defaultAccelConstraint,
                 0.25, 0.1
         );
     }
+
+    // PATH MODS START HERE
+
+    public final class FollowTrajectoryAsPathAction implements Action {
+        public final DisplacementTrajectory dt;
+        public final HolonomicController contr;
+
+        private final double[] xPoints, yPoints;
+        double disp;
+
+        public FollowTrajectoryAsPathAction(TimeTrajectory t) {
+            dt = new DisplacementTrajectory(t.path, t.profile.dispProfile);
+
+            List<Double> disps = com.acmerobotics.roadrunner.Math.range(
+                    0, dt.path.length(),
+                    Math.max(2, (int) Math.ceil(dt.path.length() / 2)));
+            xPoints = new double[disps.size()];
+            yPoints = new double[disps.size()];
+            for (int i = 0; i < disps.size(); i++) {
+                Pose2d p = t.path.get(disps.get(i), 1).value();
+                xPoints[i] = p.position.x;
+                yPoints[i] = p.position.y;
+            }
+
+            contr = new HolonomicController(PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain);
+            disp = 0;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket p) {
+            if (disp + 1 > dt.length()) {
+                leftFront.setPower(0);
+                leftBack.setPower(0);
+                rightBack.setPower(0);
+                rightFront.setPower(0);
+
+                return false;
+            }
+            PoseVelocity2d robotVelRobot = updatePoseEstimate();
+            disp = dt.project(pose.position, disp);
+            Pose2dDual<Time> poseTarget = dt.get(disp);
+            PoseVelocity2dDual<Time> cmd = contr.compute(poseTarget, pose, robotVelRobot);
+
+            MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(cmd);
+            double voltage = voltageSensor.getVoltage();
+            final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick, PARAMS.kA / PARAMS.inPerTick);
+            leftFront.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
+            leftBack.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
+            rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
+            rightFront.setPower(feedforward.compute(wheelVels.rightFront) / voltage);
+
+
+            FlightRecorder.write("TARGET_POSE", new PoseMessage(poseTarget.value()));
+
+            p.put("x", pose.position.x);
+            p.put("y", pose.position.y);
+            p.put("heading (deg)", Math.toDegrees(pose.heading.log()));
+
+            Pose2d error = poseTarget.value().minusExp(pose);
+            p.put("xError", error.position.x);
+            p.put("yError", error.position.y);
+            p.put("headingError (deg)", Math.toDegrees(error.heading.log()));
+
+            // only draw when active; only one drive action should be active at a time
+            Canvas c = p.fieldOverlay();
+            drawPoseHistory(c);
+
+            c.setStroke("#4CAF50");
+            drawRobot(c, poseTarget.value());
+
+            c.setStroke("#3F51B5");
+            drawRobot(c, pose);
+
+            c.setStroke("#4CAF50FF");
+            c.setStrokeWidth(1);
+            c.strokePolyline(xPoints, yPoints);
+
+            return true;
+
+        }
+
+        @Override
+        public void preview(Canvas c) {
+            c.setStroke("#4CAF507A");
+            c.setStrokeWidth(1);
+            c.strokePolyline(xPoints, yPoints);
+        }
+    }
+
 }

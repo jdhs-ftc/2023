@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.experiments;
 
 import androidx.annotation.NonNull;
 
@@ -11,6 +11,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.Helpers;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.PoseMessage;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -102,11 +105,11 @@ public class AprilTagDrive extends MecanumDrive {
         double xPos;
         double yPos;
         if (Math.abs(Math.toDegrees((imuHeading - PARAMS.cameraYawOffset) - tagHeading)) - 0.5 > 0) { // if the robot isn't within half a degree of straight up
-            xPos = tagPos.x - (Math.sin((imuHeading - PARAMS.cameraYawOffset) - tagHeading) * detection.ftcPose.x) - PARAMS.cameraOffset.x;
-            yPos = tagPos.y - (Math.cos((imuHeading - PARAMS.cameraYawOffset) - tagHeading) * detection.ftcPose.y) - PARAMS.cameraOffset.y;
+            xPos = tagPos.x - (Math.sin((imuHeading + -PARAMS.cameraYawOffset + detection.ftcPose.bearing + -tagHeading)) * detection.ftcPose.y) - PARAMS.cameraOffset.x;
+            yPos = tagPos.y - (Math.cos((imuHeading + -PARAMS.cameraYawOffset + detection.ftcPose.bearing + -tagHeading) ) * detection.ftcPose.y) - PARAMS.cameraOffset.y;
         } else {
-            xPos = (tagPos.x - detection.ftcPose.x) - PARAMS.cameraOffset.x; // TODO; this will ONLY work for the backdrop tags
-            yPos = (tagPos.y - detection.ftcPose.y) - PARAMS.cameraOffset.y;
+            xPos = (tagPos.x - detection.ftcPose.y) - PARAMS.cameraOffset.y; // TODO; this will ONLY work for the backdrop tags
+            yPos = (tagPos.y - detection.ftcPose.x) - PARAMS.cameraOffset.x;
         }
 
         // take the tag's field position & subtract it from the position relative to camera to get the camera's position
@@ -116,7 +119,10 @@ public class AprilTagDrive extends MecanumDrive {
 
         // use the offsets to get the robot's position from the camera's position
         //Vector2d RobotPos = globalCameraPos.plus(PARAMS.cameraOffset.unaryMinus());
-        return Helpers.rotateVector(new Vector2d(xPos, yPos), -tagHeading);
+
+        // TODO: will not work for diff tags then backdrop
+        //return Helpers.rotateVector(new Vector2d(xPos, yPos), tagHeading - Math.toRadians(180));
+        return new Vector2d(xPos, yPos);
     }
 
 

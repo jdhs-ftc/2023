@@ -38,7 +38,7 @@ public class Helpers {
     }
 
     public static double quarternionToHeading(Quaternion Q) {
-        return Math.atan2(2.0 * (Q.z * Q.w + Q.x * Q.y) , - 1.0 + 2.0 * (Q.w * Q.w + Q.x * Q.x));
+        return Math.atan2(2.0 * (Q.z * Q.w + Q.x * Q.y) , - 1.0 + 2.0 * (Q.w * Q.w + Q.x * Q.x)) - Math.toRadians(270);
     }
     public static AprilTagPoseFtc counterRotatePose(AprilTagPoseFtc pose) { // TODO: DON'T uSE THIS JUST MAKE THE CAMERA POINT FORWARD
         // rotate the X, Y, Z of the pose to make the pitch and roll 0

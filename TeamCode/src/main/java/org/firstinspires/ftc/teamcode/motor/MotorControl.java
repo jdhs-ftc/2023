@@ -124,18 +124,14 @@ public class MotorControl {
      */
     @Config
     public static class ClawArm extends ControlledMotor {
-        public static PIDFController.PIDCoefficients PID_CONSTANTS = new PIDFController.PIDCoefficients(0.05, 0.0, 0.01);
+        public static PIDFController.PIDCoefficients PID_CONSTANTS = new PIDFController.PIDCoefficients(0.01, 0.0, 0.01);
         public final PIDFController controller = new PIDFController(PID_CONSTANTS);
-
-        public double getTargetPosition() {
-            return targetPosition;
+        public enum Preset {
+            DOWN,
+            LOW_PLACE,
+            HOOK
         }
-
-        public void setTargetPosition(double targetPosition) {
-            this.targetPosition = targetPosition;
-        }
-
-        private double targetPosition;
+        public Preset lastPreset = Preset.DOWN;
 
         public ClawArm(@NonNull HardwareMap hardwareMap) {
             targetPosition = 0;
@@ -144,7 +140,7 @@ public class MotorControl {
             motor.setCurrentAlert(4.4, CurrentUnit.AMPS);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            controller.setOutputBounds(-0.5, 0.5);
+            controller.setOutputBounds(-0.3, 0.5);
         }
 
         /**
@@ -157,12 +153,21 @@ public class MotorControl {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
-
         /**
          * This updates the arm motor to match the current state. This should be run in a loop.
          */
         public void update() {
-            controller.targetPosition = targetPosition;
+            controller.targetPosition = Math.round(targetPosition);
+            /*
+            if (motor.getCurrentPosition() < 20) {
+                controller.pid = new PIDFController.PIDCoefficients(0.01, 0.0, 0.01);
+                controller.setOutputBounds(-0.3, 0.5);
+            } else {
+                controller.pid = new PIDFController.PIDCoefficients(0.05, 0.0, 0.01);
+                controller.setOutputBounds(-0.6, 0.6);
+            }
+
+             */
             if (!motor.isOverCurrent()) {
                 motor.setPower(controller.update(motor.getCurrentPosition()));
             } else {
@@ -171,39 +176,49 @@ public class MotorControl {
             }
         }
 
+        public void movePreset(Preset newPreset) {
+            if (newPreset == lastPreset) {
+                return;
+            }
+            switch (newPreset) {
+                case DOWN:
+                    moveDown();
+                    break;
+                case LOW_PLACE:
+                    moveLowPlace();
+                    break;
+                case HOOK:
+                    moveToHook();
+                    break;
+            }
+        }
+
         public void moveLowPlace() {
             setTargetPosition(60);
+            lastPreset = Preset.LOW_PLACE;
         } // TODO: TUNE
 
         public void moveDown() {
-            setTargetPosition(0);
+            this.setTargetPosition(0);
+            lastPreset = Preset.DOWN;
         }
 
-        public void moveHook() {
+        public void moveToHook() {
             setTargetPosition(130);
+            lastPreset = Preset.HOOK;
         }
 
         public boolean closeEnough() {
             return Math.abs(motor.getCurrentPosition() - targetPosition) < 2;
         }
 
-        public boolean isOverCurrent() {
-            return motor.isOverCurrent();
-        }
+
     }
     /**
      * This class controls the slide motor.
      */
     public static class Slide extends ControlledMotor {
-        public double getTargetPosition() {
-            return targetPosition;
-        }
 
-        public void setTargetPosition(double targetPosition) {
-            this.targetPosition = targetPosition;
-        }
-
-        private double targetPosition;
 
         /**
          * This initializes the slide motor. This should be run before any other methods.
@@ -256,9 +271,6 @@ public class MotorControl {
             return Math.abs(motor.getCurrentPosition() - targetPosition) < 20;
         }
 
-        public boolean isOverCurrent() {
-            return motor.isOverCurrent();
-        }
     }
 
     /**
@@ -267,9 +279,18 @@ public class MotorControl {
 
     public abstract static class ControlledMotor {
         public DcMotorEx motor;
-        abstract void update();
-        abstract void reset();
-        abstract boolean closeEnough();
-        abstract boolean isOverCurrent();
+        double targetPosition;
+        public double getTargetPosition() {
+            return targetPosition;
+        }
+        public void setTargetPosition(double targetPosition) {
+            this.targetPosition = targetPosition;
+        }
+        public abstract void update();
+        public abstract void reset();
+        public abstract boolean closeEnough();
+        public boolean isOverCurrent() {
+            return motor.isOverCurrent();
+        }
     }
 }
