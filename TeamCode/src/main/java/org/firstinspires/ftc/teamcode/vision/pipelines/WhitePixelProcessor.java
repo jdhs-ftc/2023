@@ -58,10 +58,10 @@ public class WhitePixelProcessor implements VisionProcessor {
      * min and max values here for now, meaning
      * that all pixels will be shown.
      */
-    public Scalar lower = new Scalar(160, 109, 113);
-    public Scalar upper = new Scalar(255, 128, 136);
-    public double canny1 = 100;
-    public double canny2 = 500;
+    public Scalar lower = new Scalar(0, 0, 159);
+    public Scalar upper = new Scalar(89, 74, 255);
+    public final double canny1 = 100;
+    public final double canny2 = 500;
     public double blur = 15;
     public Rect detectedPixelCandidate = null;
 
@@ -70,7 +70,7 @@ public class WhitePixelProcessor implements VisionProcessor {
      * space we want to use on the live field
      * tuner instead of hardcoding it
      */
-    public ColorSpace colorSpace = ColorSpace.YCrCb;
+    final ColorSpace colorSpace = ColorSpace.HSV;
 
     /*
      * A good practice when typing EOCV pipelines is
@@ -82,12 +82,11 @@ public class WhitePixelProcessor implements VisionProcessor {
      * memory leak and causing the app to crash due to an
      * "Out of Memory" error.
      */
-    private Mat ycrcbMat       = new Mat();
-    private Mat binaryMat      = new Mat();
-    private Mat maskedInputMat = new Mat();
+    private final Mat ycrcbMat       = new Mat();
+    private final Mat binaryMat      = new Mat();
+    private final Mat maskedInputMat = new Mat();
     private Mat edges = new Mat();
 
-    private Telemetry telemetry = null;
     public Rect detectedPixel;
 
     /**
@@ -108,7 +107,7 @@ public class WhitePixelProcessor implements VisionProcessor {
         Lab(Imgproc.COLOR_RGB2Lab);
 
         //store cvtCode in a public var
-        public int cvtCode = 0;
+        public int cvtCode;
 
         //constructor to be used by enum declarations above
         ColorSpace(int cvtCode) {
@@ -117,7 +116,6 @@ public class WhitePixelProcessor implements VisionProcessor {
     }
 
     public WhitePixelProcessor(Telemetry telemetry) {
-        this.telemetry = telemetry;
     }
 
     @Override
@@ -157,6 +155,8 @@ public class WhitePixelProcessor implements VisionProcessor {
         Core.inRange(ycrcbMat, lower, upper, binaryMat);
 
 
+
+
         /*
          * Release the reusable Mat so that old data doesn't
          * affect the next step in the current processing
@@ -172,8 +172,10 @@ public class WhitePixelProcessor implements VisionProcessor {
          * range (RGB 0, 0, 0. All discarded pixels will be black)
          */
         Core.bitwise_and(frame, frame, maskedInputMat, binaryMat);
-        Imgproc.Canny(maskedInputMat, edges, canny1, canny2);
 
+        Imgproc.Canny(maskedInputMat, edges, canny1, canny2);
+        //Imgproc.cvtColor(maskedInputMat, edges, Imgproc.COLOR_HSV2BGR);
+        //Imgproc.cvtColor(edges, edges, Imgproc.COLOR_BGR2GRAY);
         // https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
         // Oftentimes the edges are disconnected. findContours connects these edges.
         // We then find the bounding rectangles of those contours

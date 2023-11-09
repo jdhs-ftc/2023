@@ -17,12 +17,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * This class is used to control the motor systems on the robot.
  */
 public class MotorControl {
-    public Servo claw;
-    public Servo hookArm;
-    public Slide slide;
-    public ClawArm clawArm;
-    public CRServo shooter;
-    public ColorSensor color;
+    public final Servo claw;
+    public final Servo hookArm;
+    public final Slide slide;
+    public final ClawArm clawArm;
+    public final CRServo shooter;
+    public final ColorSensor color;
 
     /**
      * Gets the current state of the arm and slide together.
@@ -124,7 +124,7 @@ public class MotorControl {
      */
     @Config
     public static class ClawArm extends ControlledMotor {
-        public static PIDFController.PIDCoefficients PID_CONSTANTS = new PIDFController.PIDCoefficients(0.01, 0.0, 0.01);
+        public static final PIDFController.PIDCoefficients PID_CONSTANTS = new PIDFController.PIDCoefficients(0.01, 0.0, 0.01);
         public final PIDFController controller = new PIDFController(PID_CONSTANTS);
         public enum Preset {
             DOWN,
@@ -204,7 +204,7 @@ public class MotorControl {
         }
 
         public void moveToHook() {
-            setTargetPosition(130);
+            setTargetPosition(140);
             lastPreset = Preset.HOOK;
         }
 

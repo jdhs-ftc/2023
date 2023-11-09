@@ -7,7 +7,9 @@ import androidx.annotation.Nullable;
  */
 public class PIDFController {
     public static final class PIDCoefficients {
-        public double kP, kI, kD;
+        public final double kP;
+        public final double kI;
+        public final double kD;
 
         public PIDCoefficients(double kP, double kI, double kD) {
             this.kP = kP;
@@ -20,7 +22,7 @@ public class PIDFController {
         double compute(double position, @Nullable Double velocity);
     }
 
-    public PIDCoefficients pid;
+    public final PIDCoefficients pid;
     private final double kV, kA, kStatic;
     private final FeedforwardFun kF;
 

@@ -42,7 +42,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class PipelineProcessor implements VisionProcessor
 {
-    public OpenCvPipeline pipeline;
+    public final OpenCvPipeline pipeline;
     private boolean firstFrame = true;
     public PipelineProcessor(OpenCvPipeline pipeline)
     {

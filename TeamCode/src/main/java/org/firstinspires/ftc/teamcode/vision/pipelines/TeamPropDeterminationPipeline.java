@@ -59,22 +59,22 @@ public class TeamPropDeterminationPipeline extends OpenCvPipeline
      *   ------------------------------------
      *
      */
-    Point region1_pointA = new Point(
+    final Point region1_pointA = new Point(
             REGION1_TOPLEFT_ANCHOR_POINT.x,
             REGION1_TOPLEFT_ANCHOR_POINT.y);
-    Point region1_pointB = new Point(
+    final Point region1_pointB = new Point(
             REGION1_TOPLEFT_ANCHOR_POINT.x + SIDE_REGION_WIDTH,
             REGION1_TOPLEFT_ANCHOR_POINT.y + SIDE_REGION_HEIGHT);
-    Point region2_pointA = new Point(
+    final Point region2_pointA = new Point(
             REGION2_TOPLEFT_ANCHOR_POINT.x,
             REGION2_TOPLEFT_ANCHOR_POINT.y);
-    Point region2_pointB = new Point(
+    final Point region2_pointB = new Point(
             REGION2_TOPLEFT_ANCHOR_POINT.x + FRONT_REGION_WIDTH,
             REGION2_TOPLEFT_ANCHOR_POINT.y + FRONT_REGION_HEIGHT);
-    Point region3_pointA = new Point(
+    final Point region3_pointA = new Point(
             REGION3_TOPLEFT_ANCHOR_POINT.x,
             REGION3_TOPLEFT_ANCHOR_POINT.y);
-    Point region3_pointB = new Point(
+    final Point region3_pointB = new Point(
             REGION3_TOPLEFT_ANCHOR_POINT.x + SIDE_REGION_WIDTH,
             REGION3_TOPLEFT_ANCHOR_POINT.y + SIDE_REGION_HEIGHT);
 
@@ -83,9 +83,9 @@ public class TeamPropDeterminationPipeline extends OpenCvPipeline
      */
     Mat region1_Cr, region2_Cr, region3_Cr;
     Mat region1_Cb, region2_Cb, region3_Cb;
-    Mat YCrCb = new Mat();
-    Mat Cr = new Mat();
-    Mat Cb = new Mat();
+    final Mat YCrCb = new Mat();
+    final Mat Cr = new Mat();
+    final Mat Cb = new Mat();
     int avg1, avg2, avg3;
 
     // Volatile since accessed by OpMode thread w/o synchronization

@@ -30,8 +30,9 @@ public class MeepMeepTesting {
                         new SleepAction(0.25),
                         motorControlActions.slide.setTargetPosition(150)
                 ))*/
-                .strafeTo(new Vector2d(11, 35))
-                .strafeTo(new Vector2d(11, 34))
+                .strafeTo(new Vector2d(10, 35))
+                .strafeTo(new Vector2d(10, 34))
+
                 .splineToConstantHeading(new Vector2d(10, 12), Math.toRadians(0))
                 .splineToConstantHeading(new Vector2d(50,35), Math.toRadians(0))
                 .build());

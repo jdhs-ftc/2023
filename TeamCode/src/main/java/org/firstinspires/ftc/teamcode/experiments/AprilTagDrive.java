@@ -24,14 +24,14 @@ public class AprilTagDrive extends MecanumDrive {
     public static class Params {
         // distance FROM robot center TO camera (inches)
         // TODO: tune
-        public Vector2d cameraOffset = new Vector2d(
+        public final Vector2d cameraOffset = new Vector2d(
                 0,
                 0);
-        public double cameraYawOffset = Math.toRadians(0); // TODO: tune
+        public final double cameraYawOffset = Math.toRadians(0); // TODO: tune
     }
 
-    public static Params PARAMS = new Params();
-    AprilTagProcessor aprilTag;
+    public static final Params PARAMS = new Params();
+    final AprilTagProcessor aprilTag;
     Pose2d aprilPose;
     Pose2d localizerPose;
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTag) {
@@ -105,8 +105,8 @@ public class AprilTagDrive extends MecanumDrive {
         double xPos;
         double yPos;
         if (Math.abs(Math.toDegrees((imuHeading - PARAMS.cameraYawOffset) - tagHeading)) - 0.5 > 0) { // if the robot isn't within half a degree of straight up
-            xPos = tagPos.x - (Math.sin((imuHeading + -PARAMS.cameraYawOffset + detection.ftcPose.bearing + -tagHeading)) * detection.ftcPose.y) - PARAMS.cameraOffset.x;
-            yPos = tagPos.y - (Math.cos((imuHeading + -PARAMS.cameraYawOffset + detection.ftcPose.bearing + -tagHeading) ) * detection.ftcPose.y) - PARAMS.cameraOffset.y;
+            xPos = tagPos.x - (Math.cos((imuHeading - PARAMS.cameraYawOffset + Math.toRadians(detection.ftcPose.bearing) - tagHeading)) * detection.ftcPose.y) - PARAMS.cameraOffset.x; // oring sin
+            yPos = tagPos.y - (Math.sin((imuHeading - PARAMS.cameraYawOffset + Math.toRadians(detection.ftcPose.bearing) - tagHeading) ) * detection.ftcPose.y) - PARAMS.cameraOffset.y; // orig cos
         } else {
             xPos = (tagPos.x - detection.ftcPose.y) - PARAMS.cameraOffset.y; // TODO; this will ONLY work for the backdrop tags
             yPos = (tagPos.y - detection.ftcPose.x) - PARAMS.cameraOffset.x;

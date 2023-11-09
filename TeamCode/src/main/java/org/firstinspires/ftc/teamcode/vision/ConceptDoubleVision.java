@@ -62,8 +62,6 @@ public class ConceptDoubleVision extends LinearOpMode {
      */
     private PipelineProcessor pipelineProcessor;
 
-    private TeamPropDeterminationPipeline teamPropDeterminationPipeline;
-
     /**
      * The variable to store our instance of the vision portal.
      */
@@ -136,7 +134,7 @@ public class ConceptDoubleVision extends LinearOpMode {
         // OCVPropDetect Configuration
         // -----------------------------------------------------------------------------------------
 
-        teamPropDeterminationPipeline = new TeamPropDeterminationPipeline(telemetry);
+        TeamPropDeterminationPipeline teamPropDeterminationPipeline = new TeamPropDeterminationPipeline(telemetry);
         teamPropDeterminationPipeline.setUseTelemetry(false);
         //teamPropDeterminationPipeline.useBlue(false); //TODO change
         pipelineProcessor = new PipelineProcessor(teamPropDeterminationPipeline);

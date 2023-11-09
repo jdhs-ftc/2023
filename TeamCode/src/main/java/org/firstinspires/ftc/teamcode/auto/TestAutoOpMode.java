@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.auto;
 
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
@@ -16,9 +18,10 @@ import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 
 @Autonomous(name = "TestAutoOpMode", group = "Test")
 @Disabled
+@Config
 public class TestAutoOpMode extends ActionOpMode {
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
 
 
 
@@ -40,11 +43,12 @@ public class TestAutoOpMode extends ActionOpMode {
                         .stopAndAdd(motorControlActions.waitUntilFinished())
                 .build();
 
+
         waitForStart();
 
         if (isStopRequested()) return;
 
-        runBlocking(new RaceParallelCommand(
+        Actions.runBlocking(new RaceParallelCommand(
                 traj,
                 motorControlActions.update()
         ));

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -17,7 +18,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 public class LocalizationTest extends LinearOpMode {
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             //MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
@@ -47,17 +48,25 @@ public class LocalizationTest extends LinearOpMode {
 
                 drive.updatePoseEstimate();
 
+                TelemetryPacket packet = new TelemetryPacket();
+                MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
+
+
+
 
                 telemetry.addData("x", drive.pose.position.x);
                 telemetry.addData("y", drive.pose.position.y);
                 telemetry.addData("heading", drive.pose.heading);
                 if (!aprilTag.getDetections().isEmpty()) {
+                    packet.fieldOverlay().fillCircle(aprilTag.getDetections().get(0).metadata.fieldPosition.get(0), aprilTag.getDetections().get(0).metadata.fieldPosition.get(1), 2);
                     telemetry.addData("tagFieldPosX", aprilTag.getDetections().get(0).metadata.fieldPosition.get(0));
                     telemetry.addData("tagFieldPosY", aprilTag.getDetections().get(0).metadata.fieldPosition.get(1));
                     telemetry.addData("tagHeading", Math.toDegrees(Helpers.quarternionToHeading(aprilTag.getDetections().get(0).metadata.fieldOrientation)));
                     telemetry.addData("tagRelPosX", aprilTag.getDetections().get(0).ftcPose.x);
                     telemetry.addData("tagRelPosY", aprilTag.getDetections().get(0).ftcPose.y);
+                    telemetry.addData("tagRelBearing", aprilTag.getDetections().get(0).ftcPose.bearing);
                 }
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
                 telemetry.update();
             }
         } else if (TuningOpModes.DRIVE_CLASS.equals(TankDrive.class)) {

@@ -49,8 +49,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+/** @noinspection CanBeFinal*/
 @Config
 public final class TankDrive {
+    /** @noinspection CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal */
     public static class Params {
         // drive model parameters
         public double inPerTick = 0;

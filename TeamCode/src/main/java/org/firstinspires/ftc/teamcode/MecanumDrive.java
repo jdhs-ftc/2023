@@ -9,9 +9,13 @@ import com.acmerobotics.roadrunner.AccelConstraint;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.CancelableProfile;
+import com.acmerobotics.roadrunner.Curves;
 import com.acmerobotics.roadrunner.DisplacementTrajectory;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.HolonomicController;
+import com.acmerobotics.roadrunner.IdentityPoseMap;
+import com.acmerobotics.roadrunner.MappedPosePath;
 import com.acmerobotics.roadrunner.MecanumKinematics;
 import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.MotorFeedforward;
@@ -24,6 +28,7 @@ import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Time;
 import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.TimeTurn;
+import com.acmerobotics.roadrunner.Trajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Twist2dDual;
@@ -47,11 +52,13 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 @Config
 public class MecanumDrive {
+    /** @noinspection CanBeFinal */
     public static class Params {
         // drive model parameters
         public double inPerTick = 0.000544563442;
@@ -82,6 +89,7 @@ public class MecanumDrive {
         public double headingVelGain = 0.5; // shared with turn
     }
 
+    /** @noinspection CanBeFinal*/
     public static Params PARAMS = new Params();
 
     public final MecanumKinematics kinematics = new MecanumKinematics(
@@ -528,5 +536,97 @@ public class MecanumDrive {
             c.strokePolyline(xPoints, yPoints);
         }
     }
+
+    public final class FollowCancelableTrajectoryAction implements Action { // TODO: test this! https://discord.com/channels/225450307654647808/1169891340100845630/1171235110847250504
+        public final Trajectory cancelableTrajectory;
+
+        public final CancelableProfile cancelableProfile;
+
+        private final double[] xPoints, yPoints;
+
+        HolonomicController contr;
+        double disp;
+
+        public FollowCancelableTrajectoryAction(TimeTrajectory t) {
+            cancelableProfile = new CancelableProfile(t.profile.dispProfile, t.profile.dispProfile.disps, t.profile.dispProfile.accels);
+            cancelableTrajectory = new Trajectory(new MappedPosePath(t.path, new IdentityPoseMap()), cancelableProfile, Collections.singletonList(0.0));
+
+
+            List<Double> disps = com.acmerobotics.roadrunner.Math.range(
+                    0, t.path.length(),
+                    Math.max(2, (int) Math.ceil(t.path.length() / 2)));
+            xPoints = new double[disps.size()];
+            yPoints = new double[disps.size()];
+            for (int i = 0; i < disps.size(); i++) {
+                Pose2d p = t.path.get(disps.get(i), 1).value();
+                xPoints[i] = p.position.x;
+                yPoints[i] = p.position.y;
+            }
+
+            contr = new HolonomicController(PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain);
+            disp = 0;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket p) {
+            if (disp + 1 > cancelableTrajectory.path.length()) {
+                leftFront.setPower(0);
+                leftBack.setPower(0);
+                rightBack.setPower(0);
+                rightFront.setPower(0);
+
+                return false;
+            }
+            PoseVelocity2d robotVelRobot = updatePoseEstimate();
+            disp = Curves.project(cancelableTrajectory.path, pose.position, disp);
+            Pose2dDual<Time> poseTarget = cancelableTrajectory.path.get(disp,3).reparam(cancelableTrajectory.profile.baseProfile.get(disp));
+            PoseVelocity2dDual<Time> cmd = contr.compute(poseTarget, pose, robotVelRobot);
+
+            MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(cmd);
+            double voltage = voltageSensor.getVoltage();
+            final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick, PARAMS.kA / PARAMS.inPerTick);
+            leftFront.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
+            leftBack.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
+            rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
+            rightFront.setPower(feedforward.compute(wheelVels.rightFront) / voltage);
+
+
+            FlightRecorder.write("TARGET_POSE", new PoseMessage(poseTarget.value()));
+
+            p.put("x", pose.position.x);
+            p.put("y", pose.position.y);
+            p.put("heading (deg)", Math.toDegrees(pose.heading.log()));
+
+            Pose2d error = poseTarget.value().minusExp(pose);
+            p.put("xError", error.position.x);
+            p.put("yError", error.position.y);
+            p.put("headingError (deg)", Math.toDegrees(error.heading.log()));
+
+            // only draw when active; only one drive action should be active at a time
+            Canvas c = p.fieldOverlay();
+            drawPoseHistory(c);
+
+            c.setStroke("#4CAF50");
+            drawRobot(c, poseTarget.value());
+
+            c.setStroke("#3F51B5");
+            drawRobot(c, pose);
+
+            c.setStroke("#4CAF50FF");
+            c.setStrokeWidth(1);
+            c.strokePolyline(xPoints, yPoints);
+
+            return true;
+        }
+
+        @Override
+        public void preview(Canvas c) {
+            c.setStroke("#4CAF507A");
+            c.setStrokeWidth(1);
+            c.strokePolyline(xPoints, yPoints);
+        }
+    }
+
+
 
 }

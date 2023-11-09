@@ -44,16 +44,16 @@ public class TeleopFieldCentric extends LinearOpMode {
         HOOK_TO_BACKDROP_WAIT, CLAW_RELEASE, PLACE
     }
     LiftState liftState = LiftState.IDLE;
-    ElapsedTime liftTimer = new ElapsedTime();
-    ElapsedTime loopTime = new ElapsedTime();
+    final ElapsedTime liftTimer = new ElapsedTime();
+    final ElapsedTime loopTime = new ElapsedTime();
     boolean pixelInClaw = false;
     boolean pixelInHook = false;
-    Gamepad currentGamepad1 = new Gamepad();
-    Gamepad currentGamepad2 = new Gamepad();
-    Gamepad previousGamepad1 = new Gamepad();
-    Gamepad previousGamepad2 = new Gamepad();
-    WhitePixelProcessor whitePixelProcessor = new WhitePixelProcessor(telemetry);
-    CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
+    final Gamepad currentGamepad1 = new Gamepad();
+    final Gamepad currentGamepad2 = new Gamepad();
+    final Gamepad previousGamepad1 = new Gamepad();
+    final Gamepad previousGamepad2 = new Gamepad();
+    final WhitePixelProcessor whitePixelProcessor = new WhitePixelProcessor(telemetry);
+    final CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
 
     @Override
@@ -336,7 +336,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 case PIXEL_TO_HOOK:
                     motorControl.clawArm.moveToHook();
                     motorControl.slide.setTargetPosition(0);
-                    if (liftTimer.milliseconds() > 750) {
+                    if (liftTimer.milliseconds() > 1000) { // prev 750
                         pixelInClaw = false;
                         pixelInHook = true;
                         liftState = LiftState.CLAW_RELEASE;

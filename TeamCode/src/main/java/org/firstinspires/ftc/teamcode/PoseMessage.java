@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.roadrunner.Pose2d;
 
 public final class PoseMessage {
-    public long timestamp;
-    public double x;
-    public double y;
-    public double heading;
+    public final long timestamp;
+    public final double x;
+    public final double y;
+    public final double heading;
 
     public PoseMessage(Pose2d pose) {
         this.timestamp = System.nanoTime();
@@ -15,6 +17,7 @@ public final class PoseMessage {
         this.heading = pose.heading.log();
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "PoseMessage{" +
