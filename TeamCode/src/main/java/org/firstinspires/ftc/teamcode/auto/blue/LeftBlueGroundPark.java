@@ -35,13 +35,9 @@ import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 
-/*
- * This sample demonstrates how to run analysis during INIT
- * and then snapshot that value for later use when the START
- * command is issued. The pipeline is re-used from SkystoneDeterminationExample
- */
+
 @Autonomous(group = "Blue", name = "LEFT Blue Vision Auto", preselectTeleOp = "Teleop Field Centric")
-public class LeftBlueVisionAuto extends AbstractVisionOpMode
+public class LeftBlueGroundPark extends AbstractVisionOpMode
 {
     @Override
     public PoseStorage.Team team() {

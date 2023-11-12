@@ -1,8 +1,6 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Rotation2d;
-import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
@@ -18,23 +16,13 @@ public class MeepMeepTesting {
                 .setDimensions(14,18)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, 63, Math.toRadians(90)))
-                .stopAndAdd(new SleepAction(1))
-                .strafeToSplineHeading(new Vector2d(12,35), Rotation2d.exp(Math.toRadians(0)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, -63, Math.toRadians(-90)))
+                .setReversed(true)
+                .splineToSplineHeading(new Pose2d(8,-32, Math.toRadians(180)), Math.toRadians(90))
+                .endTrajectory()
+                .strafeTo(new Vector2d(50,-35))
+                .splineToConstantHeading(new Vector2d(50,-35), Math.toRadians(0))
 
-                /*
-                .stopAndAdd(new SequentialAction(
-                        motorControlActions.setCurrentMode(MotorControl.combinedPreset.GRAB),
-                        new SleepAction(0.1),
-                        motorControlActions.lowerClaw.release(),
-                        new SleepAction(0.25),
-                        motorControlActions.slide.setTargetPosition(150)
-                ))*/
-                .strafeTo(new Vector2d(10, 35))
-                .strafeTo(new Vector2d(10, 34))
-
-                .splineToConstantHeading(new Vector2d(10, 12), Math.toRadians(0))
-                .splineToConstantHeading(new Vector2d(50,35), Math.toRadians(0))
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_JUICE_DARK)

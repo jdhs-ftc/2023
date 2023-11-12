@@ -23,6 +23,7 @@ public class LocalizationTest extends LinearOpMode {
             //MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
             AprilTagProcessor aprilTag = new AprilTagProcessor.Builder()
+                    .setLensIntrinsics(517.0085f, 508.91845f, 322.364324f, 167.9933806f)
                     .build();
             CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
@@ -33,7 +34,7 @@ public class LocalizationTest extends LinearOpMode {
 
             FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
 
-            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,0), aprilTag);
+            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(180)), aprilTag);
 
             waitForStart();
 
@@ -46,10 +47,12 @@ public class LocalizationTest extends LinearOpMode {
                         -gamepad1.right_stick_x
                 ));
 
+                drive.correctWithTag();
                 drive.updatePoseEstimate();
 
                 TelemetryPacket packet = new TelemetryPacket();
-                MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
+                MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot
+                packet.fieldOverlay().fillCircle(drive.pose.position.x, drive.pose.position.y,1);
 
 
 

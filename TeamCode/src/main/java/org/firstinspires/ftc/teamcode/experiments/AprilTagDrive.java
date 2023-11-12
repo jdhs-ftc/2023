@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.experiments;
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Time;
@@ -24,16 +26,17 @@ public class AprilTagDrive extends MecanumDrive {
     public static class Params {
         // distance FROM robot center TO camera (inches)
         // TODO: tune
-        public final Vector2d cameraOffset = new Vector2d(
-                0,
-                0);
-        public final double cameraYawOffset = Math.toRadians(0); // TODO: tune
+        public static Vector2d cameraOffset = new Vector2d(
+                -9,
+                4);
+        public static double cameraYawOffset = Math.toRadians(180); // TODO: tune
     }
 
     public static final Params PARAMS = new Params();
     final AprilTagProcessor aprilTag;
     Pose2d aprilPose;
     Pose2d localizerPose;
+    boolean shouldTagCorrect = false;
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTag) {
         super(hardwareMap, pose);
         this.aprilTag = aprilTag;
@@ -46,6 +49,8 @@ public class AprilTagDrive extends MecanumDrive {
         localizerPose = pose.plus(twist.value());
         // Get the absolute position from the camera
         Vector2d aprilVector = getVectorBasedOnTags();
+
+
         // it's possible we can't see any tags, so we need to check for null
         if (aprilVector != null) {
             // if we can see tags, we use the apriltag position
@@ -55,9 +60,10 @@ public class AprilTagDrive extends MecanumDrive {
         }
 
         // basically: if we see a tag and if the localizers don't disagree TOO much
-        if (aprilVector != null) { // && aprilVector.plus(localizerPose.position.times(-1)).norm() < 24 // TODO: replace, removed for initial testing
+        if (aprilVector != null && shouldTagCorrect) { // && aprilVector.plus(localizerPose.position.times(-1)).norm() < 24 // TODO: replace, removed for initial testing
             // TODO: apriltags unreliable at higher speeds? speed limit? global shutter cam? https://discord.com/channels/225450307654647808/225451520911605765/1164034719369941023
             pose = aprilPose;
+            shouldTagCorrect = false; // TODO disable
         } else {
             pose = localizerPose;
         }
@@ -104,12 +110,16 @@ public class AprilTagDrive extends MecanumDrive {
         // TODO: I don't actually know trig, this is probably terrible
         double xPos;
         double yPos;
-        if (Math.abs(Math.toDegrees((imuHeading - PARAMS.cameraYawOffset) - tagHeading)) - 0.5 > 0) { // if the robot isn't within half a degree of straight up
-            xPos = tagPos.x - (Math.cos((imuHeading - PARAMS.cameraYawOffset + Math.toRadians(detection.ftcPose.bearing) - tagHeading)) * detection.ftcPose.y) - PARAMS.cameraOffset.x; // oring sin
-            yPos = tagPos.y - (Math.sin((imuHeading - PARAMS.cameraYawOffset + Math.toRadians(detection.ftcPose.bearing) - tagHeading) ) * detection.ftcPose.y) - PARAMS.cameraOffset.y; // orig cos
+        if (Math.abs(Math.toDegrees((imuHeading - PARAMS.cameraYawOffset) - tagHeading)) - 5 > 0) { // if the robot isn't within half a degree of straight up
+            double tagRelHeading = imuHeading - PARAMS.cameraYawOffset + Math.toRadians(detection.ftcPose.bearing) - tagHeading;
+            Vector2d camGlobalOffset = new Vector2d(
+                    PARAMS.cameraOffset.x * Math.cos(-imuHeading) - PARAMS.cameraOffset.y * Math.sin(-imuHeading),
+                    PARAMS.cameraOffset.x * Math.sin(-imuHeading) + PARAMS.cameraOffset.y * Math.cos(-imuHeading));
+            xPos = tagPos.x - (Math.cos(tagRelHeading) * detection.ftcPose.y) - camGlobalOffset.x;
+            yPos = tagPos.y - (Math.sin(tagRelHeading) * detection.ftcPose.y) - camGlobalOffset.y;
         } else {
-            xPos = (tagPos.x - detection.ftcPose.y) - PARAMS.cameraOffset.y; // TODO; this will ONLY work for the backdrop tags
-            yPos = (tagPos.y - detection.ftcPose.x) - PARAMS.cameraOffset.x;
+            xPos = (tagPos.x - detection.ftcPose.y) - PARAMS.cameraOffset.x; // TODO; this will ONLY work for the backdrop tags
+            yPos = (tagPos.y - detection.ftcPose.x) - PARAMS.cameraOffset.y;
         }
 
         // take the tag's field position & subtract it from the position relative to camera to get the camera's position
@@ -126,5 +136,16 @@ public class AprilTagDrive extends MecanumDrive {
     }
 
 
-
+    public void correctWithTag() {
+        shouldTagCorrect = true;
+    }
+    public Action CorrectWithTagAction() {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                correctWithTag();
+                return false;
+            }
+        };
+    }
 }

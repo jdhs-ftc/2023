@@ -31,6 +31,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Helpers;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
+import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
@@ -80,6 +81,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         pipelineProcessor = new PipelineProcessor(pipeline);
 
         aprilTag = new AprilTagProcessor.Builder()
+                .setLensIntrinsics(517.0085f, 508.91845f, 322.364324f, 167.9933806f)
                 .build();
 
         CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
@@ -95,8 +97,8 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
 
 
 
-        //AprilTagDrive drive = new AprilTagDrive(hardwareMap, startPose(), aprilTag);
-        MecanumDrive drive = new MecanumDrive(hardwareMap, startPose());
+        AprilTagDrive drive = new AprilTagDrive(hardwareMap, startPose(), aprilTag);
+        //MecanumDrive drive = new MecanumDrive(hardwareMap, startPose()); // TODO: THIS WILL BREAK THINGS
 
         Action trajLeft = trajLeft(drive, motorControlActions);
         Action trajCenter = trajCenter(drive, motorControlActions);

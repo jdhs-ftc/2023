@@ -41,7 +41,7 @@ import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
  * command is issued. The pipeline is re-used from SkystoneDeterminationExample
  */
 @Autonomous(group = "Red", name = "RIGHT Red Vision Auto", preselectTeleOp = "Teleop Field Centric")
-public class RightRedVisionAuto extends AbstractVisionOpMode {
+public class RightRedGroundPark extends AbstractVisionOpMode {
 
     @Override
     public PoseStorage.Team team() {
