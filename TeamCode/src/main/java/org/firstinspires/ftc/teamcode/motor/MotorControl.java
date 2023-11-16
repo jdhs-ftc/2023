@@ -23,6 +23,7 @@ public class MotorControl {
     public final ClawArm clawArm;
     public final CRServo shooter;
     public final ColorSensor color;
+    public final Servo autoPlacer;
 
     /**
      * Gets the current state of the arm and slide together.
@@ -82,9 +83,11 @@ public class MotorControl {
         claw = hardwareMap.get(Servo.class, "claw");
         hookArm = hardwareMap.get(Servo.class, "hookArm");
         shooter = hardwareMap.get(CRServo.class, "shooter");
+        autoPlacer = hardwareMap.get(Servo.class, "autoPlacer");
         claw.setPosition(1);
         hookArm.setPosition(1);
         shooter.setPower(0);
+        autoPlacer.setPosition(1);
 
         color = hardwareMap.get(ColorSensor.class, "color");
 

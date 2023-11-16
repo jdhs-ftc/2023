@@ -71,7 +71,7 @@ public class MecanumDrive {
         public double kA = 0.00001; //0.00001; //increase by like 0.00001; to make the graphs line up
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 30;
+        public double maxWheelVel = 40;
         public double minProfileAccel = -30;
         public double maxProfileAccel = 30;
 
@@ -441,7 +441,7 @@ public class MecanumDrive {
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
         return new TrajectoryActionBuilder(
                 TurnAction::new,
-                FollowTrajectoryAsPathAction::new,//FollowTrajectoryAction::new, // TODO: REVERT THIS
+                FollowTrajectoryAction::new, //FollowTrajectoryAsPathAction::new, TODO: REVERT THIS
                 beginPose, 1e-6, 0.0,
                 defaultTurnConstraints,
                 defaultVelConstraint, defaultAccelConstraint,

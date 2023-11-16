@@ -5,9 +5,11 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 
 public class MotorControlActions {
-    private final MotorControl motorControl;
+    public final MotorControl motorControl;
     public final Slide slide;
     public final Arm arm;
     public final LowerClaw lowerClaw;
@@ -22,34 +24,7 @@ public class MotorControlActions {
     }
 
 
-    public Action setCurrentMode(MotorControl.combinedPreset newMode) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket t) {
-                motorControl.activatePreset(newMode);
-                return false;
-            }
 
-            @Override
-            public void preview(@NonNull Canvas canvas) {
-
-            }
-        };
-    }
-    public Action reset() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket t) {
-                motorControl.reset();
-                return false;
-            }
-
-            @Override
-            public void preview(@NonNull Canvas canvas) {
-
-            }
-        };
-    }
 
     public Action waitUntilFinished() {
         return new Action() {
@@ -78,6 +53,28 @@ public class MotorControlActions {
 
             }
         };
+    }
+
+    public Action pixelToHookCycle() { // TODO TUNE
+        return new SequentialAction(
+                telemetryPacket -> {motorControl.clawArm.moveToHook(); return false;},
+                new SleepAction(1),
+                telemetryPacket -> { motorControl.claw.setPosition(0.95); return false;},
+                new SleepAction(0.25),
+                telemetryPacket -> {motorControl.clawArm.moveDown(); return false;},
+                new SleepAction(0.25)
+        );
+    }
+
+    public Action placePixel() {
+        return new SequentialAction(
+                telemetryPacket -> {motorControl.slide.setTargetPosition(1000); return false;},
+                new SleepAction(0.4),
+                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;},
+                new SleepAction(0.6),
+                telemetryPacket -> {motorControl.hookArm.setPosition(1); return false;},
+                telemetryPacket -> {motorControl.slide.setTargetPosition(-40); return false;}
+        );
     }
 
     public class Arm {

@@ -4,9 +4,9 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
+import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 @Autonomous
 public class RightRedBoth1ClosePark extends AbstractVisionOpMode {
@@ -31,17 +31,17 @@ public class RightRedBoth1ClosePark extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajLeft(MecanumDrive drive, MotorControlActions motorControlActions) {
+    public Action trajLeft(AprilTagDrive drive, MotorControlActions motorControlActions) {
         return null;
     }
 
     @Override
-    public Action trajCenter(MecanumDrive drive, MotorControlActions motorControlActions) {
+    public Action trajCenter(AprilTagDrive drive, MotorControlActions motorControlActions) {
         return null;
     }
 
     @Override
-    public Action trajRight(MecanumDrive drive, MotorControlActions motorControlActions) {
+    public Action trajRight(AprilTagDrive drive, MotorControlActions motorControlActions) {
         return null;
     }
 }

@@ -30,16 +30,26 @@ public class AprilTagDrive extends MecanumDrive {
                 -9,
                 4);
         public static double cameraYawOffset = Math.toRadians(180); // TODO: tune
+        /*
+         * Q model covariance (trust in model), default 0.1
+         * R sensor covariance (trust in sensor), default 0.4
+         */
+        public static double kalmanFilterQ = 0.1;
+        public static double kalmanFilterR = 0.4;
     }
 
     public static final Params PARAMS = new Params();
     final AprilTagProcessor aprilTag;
+    final KalmanFilter.Vector2dKalmanFilter posFilter;
     Pose2d aprilPose;
     Pose2d localizerPose;
+    Vector2d filteredVector;
     boolean shouldTagCorrect = false;
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTag) {
         super(hardwareMap, pose);
         this.aprilTag = aprilTag;
+        this.posFilter = new KalmanFilter.Vector2dKalmanFilter(PARAMS.kalmanFilterQ, PARAMS.kalmanFilterR);
+
     }
     @Override
     public PoseVelocity2d updatePoseEstimate() {
@@ -59,14 +69,20 @@ public class AprilTagDrive extends MecanumDrive {
             aprilPose = new Pose2d(aprilVector, localizerPose.heading);
         }
 
+
+
         // basically: if we see a tag and if the localizers don't disagree TOO much
         if (aprilVector != null && shouldTagCorrect) { // && aprilVector.plus(localizerPose.position.times(-1)).norm() < 24 // TODO: replace, removed for initial testing
             // TODO: apriltags unreliable at higher speeds? speed limit? global shutter cam? https://discord.com/channels/225450307654647808/225451520911605765/1164034719369941023
-            pose = aprilPose;
+            filteredVector = posFilter.update(twist.value(), aprilVector);
+            pose = new Pose2d(aprilVector, localizerPose.heading);
             shouldTagCorrect = false; // TODO disable
         } else {
+            filteredVector = posFilter.update(twist.value(), localizerPose.position);
             pose = localizerPose;
         }
+
+        //pose = new Pose2d(filteredVector,localizerPose.heading);
 
         // rr standard
         poseHistory.add(pose);
@@ -78,7 +94,6 @@ public class AprilTagDrive extends MecanumDrive {
 
         return twist.velocity().value(); // trust the existing localizer for speeds; because I don't know how to do it with apriltags
     }
-
     public Vector2d getVectorBasedOnTags() {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         Vector2d averagePos = new Vector2d(0,0); // starting pose to add the rest to
@@ -110,17 +125,17 @@ public class AprilTagDrive extends MecanumDrive {
         // TODO: I don't actually know trig, this is probably terrible
         double xPos;
         double yPos;
-        if (Math.abs(Math.toDegrees((imuHeading - PARAMS.cameraYawOffset) - tagHeading)) - 5 > 0) { // if the robot isn't within half a degree of straight up
+        //if (Math.abs(Math.toDegrees((imuHeading - PARAMS.cameraYawOffset) - tagHeading)) - 5 > 0) { // if the robot isn't within half a degree of straight up
             double tagRelHeading = imuHeading - PARAMS.cameraYawOffset + Math.toRadians(detection.ftcPose.bearing) - tagHeading;
             Vector2d camGlobalOffset = new Vector2d(
                     PARAMS.cameraOffset.x * Math.cos(-imuHeading) - PARAMS.cameraOffset.y * Math.sin(-imuHeading),
                     PARAMS.cameraOffset.x * Math.sin(-imuHeading) + PARAMS.cameraOffset.y * Math.cos(-imuHeading));
             xPos = tagPos.x - (Math.cos(tagRelHeading) * detection.ftcPose.y) - camGlobalOffset.x;
             yPos = tagPos.y - (Math.sin(tagRelHeading) * detection.ftcPose.y) - camGlobalOffset.y;
-        } else {
+        /*} else {
             xPos = (tagPos.x - detection.ftcPose.y) - PARAMS.cameraOffset.x; // TODO; this will ONLY work for the backdrop tags
             yPos = (tagPos.y - detection.ftcPose.x) - PARAMS.cameraOffset.y;
-        }
+        }*/
 
         // take the tag's field position & subtract it from the position relative to camera to get the camera's position
         // TODO: probably wrong, I don't quite comprehend this math

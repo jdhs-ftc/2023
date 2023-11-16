@@ -410,13 +410,10 @@ public class TeleopFieldCentric extends LinearOpMode {
                 gamepad1.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
                 gamepad2.rumble(0.5, 0.5, Gamepad.RUMBLE_DURATION_CONTINUOUS);
             }
-            drive.updatePoseEstimate();
-            motorControl.update();
 
+            //autoPlacer
+            motorControl.autoPlacer.setPosition(motorControl.autoPlacer.getPosition() + gamepad2.right_stick_x / 3);
 
-            TelemetryPacket packet = new TelemetryPacket();
-            MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
-            FtcDashboard.getInstance().sendTelemetryPacket(packet);
             double colorAlpha = motorControl.color.alpha();
             double pad2rumble;
 
@@ -432,6 +429,13 @@ public class TeleopFieldCentric extends LinearOpMode {
                 pad2rumble = 0;
             }
             gamepad2.rumble(pad2rumble, pad2rumble, Gamepad.RUMBLE_DURATION_CONTINUOUS);
+
+            drive.updatePoseEstimate();
+            motorControl.update();
+
+            TelemetryPacket packet = new TelemetryPacket();
+            MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
+            FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
             double loopTimeMs = loopTime.milliseconds();
             // Print pose to telemetry

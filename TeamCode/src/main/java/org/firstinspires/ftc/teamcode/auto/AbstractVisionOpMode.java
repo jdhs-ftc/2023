@@ -29,7 +29,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Helpers;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
@@ -58,9 +57,9 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
      * @return the starting pose
      */
     public abstract Pose2d startPose();
-    public abstract Action trajLeft(MecanumDrive drive, MotorControlActions motorControlActions);
-    public abstract Action trajCenter(MecanumDrive drive, MotorControlActions motorControlActions);
-    public abstract Action trajRight(MecanumDrive drive, MotorControlActions motorControlActions);
+    public abstract Action trajLeft(AprilTagDrive drive, MotorControlActions motorControlActions);
+    public abstract Action trajCenter(AprilTagDrive drive, MotorControlActions motorControlActions);
+    public abstract Action trajRight(AprilTagDrive drive, MotorControlActions motorControlActions);
     OpenCvWebcam webcam;
     TeamPropDeterminationPipeline pipeline;
     TeamPropDeterminationPipeline.PropPosition snapshotAnalysis = TeamPropDeterminationPipeline.PropPosition.LEFT; // default
@@ -105,7 +104,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         Action trajRight = trajRight(drive, motorControlActions);
 
 
-        motorControl.activatePreset(MotorControl.combinedPreset.GRAB);
+        motorControl.claw.setPosition(0.7);
 
         /*
          * The INIT-loop:
