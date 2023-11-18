@@ -49,7 +49,7 @@ public class LeftBlue2plus2ClosePark extends AbstractVisionOpMode {
 
                 // GOTO BACKBOARD
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(50,37, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(49.75,37, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
@@ -61,16 +61,17 @@ public class LeftBlue2plus2ClosePark extends AbstractVisionOpMode {
 
                 // STACK
                 .splineTo(new Vector2d(-12, 55), Math.toRadians(180))
-                .splineTo(new Vector2d(-63,34), Math.toRadians(180))
+                .splineTo(new Vector2d(-62,35), Math.toRadians(180))
                 // GRAB PIXEL
                 .stopAndAdd(telemetryPacket -> {motorControlActions.motorControl.claw.setPosition(0.7); return false;})
                 .endTrajectory()
-                .strafeTo(new Vector2d(-56,34))
+                .strafeTo(new Vector2d(-56,35))
+
 
                 // CYCLE
-                .stopAndAdd(motorControlActions.pixelToHookCycle())
+                .stopAndAdd(motorControlActions.pixelToHook())
                 .endTrajectory()
-                .strafeTo(new Vector2d(-63,34))
+                .strafeTo(new Vector2d(-62,35))
                 // GRAB PIXEL
                 .stopAndAdd(telemetryPacket -> {motorControlActions.motorControl.claw.setPosition(0.7); return false;})
                 .endTrajectory()
@@ -83,7 +84,7 @@ public class LeftBlue2plus2ClosePark extends AbstractVisionOpMode {
                 .stopAndAdd(new SequentialAction(
                         motorControlActions.placePixel(),
                         new SleepAction(0.5),
-                        motorControlActions.pixelToHookCycle(),
+                        motorControlActions.pixelToHook(),
                         new SleepAction(0.5),
                         motorControlActions.placePixel()
                 ))

@@ -39,15 +39,16 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
-                .splineToSplineHeading(new Pose2d(32,33, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(29,32, Math.toRadians(180)), Math.toRadians(0))
                 .endTrajectory()
+                .stopAndAdd(drive.CorrectWithTagAction())
                 .stopAndAdd(telemetryPacket -> {
                     motorControlActions.motorControl.claw.setPosition(0.95);
                     return false;
                 })
                 // GOTO BACKBOARD
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(50.5,37, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(50,37, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
@@ -69,6 +70,7 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
                 // GOTO GROUND PIXEL
                 .splineToSplineHeading(new Pose2d(12,33, Math.toRadians(-90)), Math.toRadians(-90))
                 .endTrajectory()
+                .stopAndAdd(drive.CorrectWithTagAction())
 
                 .stopAndAdd(telemetryPacket -> {
                     motorControlActions.motorControl.claw.setPosition(0.95);
@@ -78,7 +80,7 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
 
                 // GOTO BACKBOARD
                 .strafeTo(new Vector2d(13,35))
-                .splineToSplineHeading(new Pose2d(50.5,31, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(50.25,31, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
@@ -100,13 +102,14 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
                 .setReversed(true)
                 .splineToSplineHeading(new Pose2d(8,32, Math.toRadians(180)), Math.toRadians(-90))
                 .endTrajectory()
+                .stopAndAdd(drive.CorrectWithTagAction())
                 .stopAndAdd(telemetryPacket -> {
                     motorControlActions.motorControl.claw.setPosition(0.95);
                     return false;
                 })
                 // PLACE HERE
                 .strafeTo(new Vector2d(9,32))
-                .splineTo(new Vector2d(50.5,25), Math.toRadians(0))
+                .splineTo(new Vector2d(50,25), Math.toRadians(0))
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),

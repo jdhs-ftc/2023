@@ -81,9 +81,10 @@ public class KalmanFilter { // todo: coded at 12:36 am.
          * NOTE: MODEL IS THE *CHANGE* SINCE LAST UPDATE
          */
         public Vector2d update(Twist2d model, Pose2d sensor) {
+            Pose2d modelPose = Pose2d.exp(model);
             return new Vector2d(
-                x.update(model.line.x, sensor.position.x),
-                y.update(model.line.y, sensor.position.y)
+                x.update(modelPose.position.x, sensor.position.x),
+                y.update(modelPose.position.y, sensor.position.y)
             );
         }
         /**

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.motor;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -11,31 +10,24 @@ import com.acmerobotics.roadrunner.SleepAction;
 public class MotorControlActions {
     public final MotorControl motorControl;
     public final Slide slide;
-    public final Arm arm;
-    public final LowerClaw lowerClaw;
-    public final UpperClaw upperClaw;
+    public final ClawArm clawArm;
+    public final Claw claw;
+    public final AutoPlacer autoPlacer;
+    public final Hook hook;
 
     public MotorControlActions(MotorControl motorControl) {
         this.motorControl = motorControl;
         this.slide = new Slide();
-        this.arm = new Arm();
-        this.lowerClaw = new LowerClaw();
-        this.upperClaw = new UpperClaw();
+        this.clawArm = new ClawArm();
+        this.claw = new Claw();
+        this.hook = new Hook();
+        this.autoPlacer = new AutoPlacer();
     }
-
-
-
-
     public Action waitUntilFinished() {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket t) {
                 return motorControl.closeEnough();
-            }
-
-            @Override
-            public void preview(@NonNull Canvas canvas) {
-
             }
         };
     }
@@ -47,15 +39,10 @@ public class MotorControlActions {
                 motorControl.update();
                 return true;
             }
-
-            @Override
-            public void preview(@NonNull Canvas canvas) {
-
-            }
         };
     }
 
-    public Action pixelToHookCycle() { // TODO TUNE
+    public Action pixelToHook() {
         return new SequentialAction(
                 telemetryPacket -> {motorControl.clawArm.moveToHook(); return false;},
                 new SleepAction(1),
@@ -77,18 +64,13 @@ public class MotorControlActions {
         );
     }
 
-    public class Arm {
+    public class ClawArm {
         public Action reset() {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.clawArm.reset();
                     return false;
-                }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
                 }
             };
         }
@@ -100,11 +82,6 @@ public class MotorControlActions {
                     motorControl.clawArm.setTargetPosition(position);
                     return false;
                 }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
-                }
             };
         }
 
@@ -114,42 +91,16 @@ public class MotorControlActions {
                 public boolean run(@NonNull TelemetryPacket t) {
                     return motorControl.clawArm.closeEnough();
                 }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
-
-                }
             };
         }
     }
     public class Slide {
-        public Action reset() {
-            return new Action() {
-                @Override
-                public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.slide.reset();
-                    return false;
-                }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
-                }
-            };
-        }
-
         public Action setTargetPosition(double position) {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.slide.setTargetPosition(position);
                     return false;
-                }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
                 }
             };
         }
@@ -159,27 +110,17 @@ public class MotorControlActions {
                 public boolean run(@NonNull TelemetryPacket t) {
                     return motorControl.slide.closeEnough();
                 }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
-                }
             };
         }
     }
 
-    public class LowerClaw {
+    public class Claw {
         public Action grab() {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.claw.setPosition(1);
+                    motorControl.claw.setPosition(0.8);
                     return false;
-                }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
                 }
             };
         }
@@ -189,47 +130,39 @@ public class MotorControlActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.claw.setPosition(0);
+                    motorControl.claw.setPosition(0.95);
                     return false;
-                }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
                 }
             };
         }
     }
-    public class UpperClaw {
-        public Action grab() {
+    public class Hook {
+        public Action raise() {
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket t) {
+                    motorControl.hookArm.setPosition(0.3);
+                    return false;
+                }
+            };
+        }
+        public Action lower() {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.hookArm.setPosition(1);
                     return false;
                 }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
-                }
             };
         }
+    }
 
-        // release
-        public Action release() {
-            return new Action() {
-                @Override
-                public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.hookArm.setPosition(0);
-                    return false;
-                }
-
-                @Override
-                public void preview(@NonNull Canvas canvas) {
-
-                }
-            };
+    public class AutoPlacer {
+        public Action place() {
+            return new SequentialAction(
+                    telemetryPacket -> {motorControl.autoPlacer.setPosition(0.5); return false;},
+                    new SleepAction(0.5),
+                    telemetryPacket -> {motorControl.autoPlacer.setPosition(1); return false;});
         }
     }
 }

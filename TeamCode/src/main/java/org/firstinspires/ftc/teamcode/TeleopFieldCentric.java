@@ -362,7 +362,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                     }
                     break;
                 case PLACE:
-                    if (liftTimer.milliseconds() > 500) {
+                    if (liftTimer.milliseconds() > 750) {
                         pixelInHook = false;
                         motorControl.hookArm.setPosition(1);
                         motorControl.clawArm.moveDown();
@@ -412,7 +412,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
 
             //autoPlacer
-            motorControl.autoPlacer.setPosition(motorControl.autoPlacer.getPosition() + gamepad2.right_stick_x / 3);
+            //motorControl.autoPlacer.setPosition(motorControl.autoPlacer.getPosition() + gamepad2.right_stick_x / 3);
 
             double colorAlpha = motorControl.color.alpha();
             double pad2rumble;

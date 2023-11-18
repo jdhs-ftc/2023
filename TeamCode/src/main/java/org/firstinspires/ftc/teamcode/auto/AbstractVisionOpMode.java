@@ -72,7 +72,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
     {
         MotorControl motorControl = new MotorControl(hardwareMap);
         MotorControlActions motorControlActions = new MotorControlActions(motorControl);
-        Actions.runBlocking(motorControlActions.lowerClaw.grab());
+        Actions.runBlocking(motorControlActions.claw.grab());
 
 
         pipeline = new TeamPropDeterminationPipeline(telemetry);
