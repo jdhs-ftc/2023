@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.motor.PIDFController;
 import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
@@ -37,6 +38,8 @@ public class TeleopFieldCentric extends LinearOpMode {
     LynxModule CONTROL_HUB;
     LynxModule EXPANSION_HUB;
     boolean fieldCentric = true;
+
+
     public enum LiftState {
         IDLE,
         PIXEL_TO_HOOK,
@@ -54,6 +57,13 @@ public class TeleopFieldCentric extends LinearOpMode {
     final Gamepad previousGamepad2 = new Gamepad();
     final WhitePixelProcessor whitePixelProcessor = new WhitePixelProcessor(telemetry);
     final CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
+
+    boolean showMotorTelemetry = false;
+    boolean showStateTelemetry = false;
+    boolean showLoopTimes = false;
+    boolean showTelemetryMenu = false;
+    boolean showPoseTelemetry = false;
+    boolean showCameraTelemetry = false;
 
 
     @Override
@@ -171,7 +181,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
 
             if (padResetPose) {
-                if (!(PoseStorage.currentTeam == PoseStorage.Team.BlUE)) {
+                if (!(PoseStorage.currentTeam == PoseStorage.Team.BLUE)) {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(90.0));
                 } else {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(-90.0));
@@ -188,7 +198,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 if (pad1ExTeamSwitch) {
                     if (PoseStorage.currentTeam == PoseStorage.Team.RED) {
                         gamepad1.rumbleBlips(1);
-                        PoseStorage.currentTeam = PoseStorage.Team.BlUE;
+                        PoseStorage.currentTeam = PoseStorage.Team.BLUE;
 
                     } else {
                         gamepad1.rumbleBlips(2);
@@ -207,7 +217,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             //Pose2d poseEstimate = drive.pose;
             double rotationAmount = -drive.pose.heading.log(); // Rotation2d.log() makes it into a double in radians.
             if (fieldCentric && !padCameraAutoAim) {
-                if (PoseStorage.currentTeam == PoseStorage.Team.BlUE) {
+                if (PoseStorage.currentTeam == PoseStorage.Team.BLUE) {
                     //input = drive.pose.heading.inverse().plus(Math.toRadians(90)).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
                     rotationAmount = rotationAmount - Math.toRadians(90);
                 } else {
@@ -239,7 +249,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             } else {
                 // Set the target heading for the heading controller to our desired angle
 
-                if (PoseStorage.currentTeam == PoseStorage.Team.BlUE) {
+                if (PoseStorage.currentTeam == PoseStorage.Team.BLUE) {
                     joystickHeadingController.targetPosition = controllerHeading.angleCast().log() + Math.toRadians(-90);
                 } else {
                     joystickHeadingController.targetPosition = controllerHeading.angleCast().log() + Math.toRadians(90);
@@ -250,7 +260,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 // velocity feedforward
                 double headingInput = (joystickHeadingController.update(drive.pose.heading.log())
                         * MecanumDrive.PARAMS.kV
-                        * MecanumDrive.PARAMS.trackWidthTicks); // TODO: tune
+                        * MecanumDrive.PARAMS.trackWidthTicks);
                 drive.setDrivePowers(
                         new PoseVelocity2d(
                                 new Vector2d(
@@ -375,7 +385,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                     break;
             }
             if (pixelInClaw) {
-                motorControl.claw.setPosition(0.8);
+                motorControl.claw.setPosition(0.85);
             } else {
                 motorControl.claw.setPosition(0.94);
             }
@@ -438,27 +448,63 @@ public class TeleopFieldCentric extends LinearOpMode {
             FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
             double loopTimeMs = loopTime.milliseconds();
-            // Print pose to telemetry
-            telemetry.addData("x", drive.pose.position.x);
-            telemetry.addData("y", drive.pose.position.y);
-            telemetry.addData("heading", drive.pose.heading.log());
-            telemetry.addData("controllerHeading", controllerHeading.angleCast().log());
-            telemetry.addData("loopTimeMs", loopTimeMs);
-            telemetry.addData("loopTimeHz", 1000.0 / loopTimeMs);
-            telemetry.addData("armTarget", motorControl.clawArm.getTargetPosition());
-            telemetry.addData("armPosition", motorControl.clawArm.motor.getCurrentPosition());
-            telemetry.addData("slideTarget", motorControl.slide.getTargetPosition());
-            telemetry.addData("slidePosition", motorControl.slide.motor.getCurrentPosition());
-            telemetry.addData("clawPower", motorControl.claw.getPosition());
-            telemetry.addData("upperClawPower", motorControl.hookArm.getPosition());
-            telemetry.addData("currentMode", motorControl.getCurrentPreset());
-            telemetry.addData("stateMachineState", liftState);
-            telemetry.addData("pixelInClaw", pixelInClaw);
-            telemetry.addData("pixelInHook", pixelInHook);
-            telemetry.addData("armOverCurrent", motorControl.clawArm.motor.isOverCurrent());
-            telemetry.addData("colorAlpha", colorAlpha);
-            telemetry.addData("colorAlphaLog", Math.log10(colorAlpha));
-            telemetry.addData("elapsedTime", liftTimer.milliseconds());
+
+            if (motorControl.isOverCurrent()) {
+                telemetry.addLine("!!! OVER CURRENT !!!");
+                telemetry.addData("CONTROL HUB CURRENT (A)", CONTROL_HUB.getCurrent(CurrentUnit.AMPS));
+                telemetry.addData("EXPANSION HUB CURRENT (A)", EXPANSION_HUB.getCurrent(CurrentUnit.AMPS));
+                telemetry.addData("ARM CURRENT", motorControl.clawArm.motor.getCurrent(CurrentUnit.AMPS));
+                telemetry.addData("SLIDE CURRENT", motorControl.slide.motor.getCurrent(CurrentUnit.AMPS));
+            }
+
+            telemetry.addAction(() -> showTelemetryMenu = !showTelemetryMenu);
+
+            if (showTelemetryMenu) {
+                telemetry.addAction(() -> showPoseTelemetry = !showPoseTelemetry);
+                telemetry.addAction(() -> showMotorTelemetry = !showMotorTelemetry);
+                telemetry.addAction(() -> showStateTelemetry = !showStateTelemetry);
+                telemetry.addAction(() -> showLoopTimes = !showLoopTimes);
+                telemetry.addAction(() -> showCameraTelemetry = !showCameraTelemetry);
+            }
+
+
+            if (showPoseTelemetry) {
+                telemetry.addLine("--- Pose ---");
+                telemetry.addData("x", drive.pose.position.x);
+                telemetry.addData("y", drive.pose.position.y);
+                telemetry.addData("heading", drive.pose.heading.log());
+            }
+            if (showLoopTimes) {
+                telemetry.addLine("--- Loop Times ---");
+                telemetry.addData("loopTimeMs", loopTimeMs);
+                telemetry.addData("loopTimeHz", 1000.0 / loopTimeMs);
+            }
+            if (showMotorTelemetry) {
+                telemetry.addLine("--- Motors ---");
+                telemetry.addData("armTarget", motorControl.clawArm.getTargetPosition());
+                telemetry.addData("armPosition", motorControl.clawArm.motor.getCurrentPosition());
+                telemetry.addData("slideTarget", motorControl.slide.getTargetPosition());
+                telemetry.addData("slidePosition", motorControl.slide.motor.getCurrentPosition());
+                telemetry.addData("clawPower", motorControl.claw.getPosition());
+                telemetry.addData("hookPower", motorControl.hookArm.getPosition());
+                telemetry.addData("colorAlpha", colorAlpha);
+                telemetry.addData("colorAlphaLog", Math.log10(colorAlpha));
+            }
+            if (showStateTelemetry) {
+                telemetry.addLine("--- State Machine ---");
+                telemetry.addData("stateMachineState", liftState);
+                telemetry.addData("pixelInClaw", pixelInClaw);
+                telemetry.addData("pixelInHook", pixelInHook);
+                telemetry.addData("elapsedTime", liftTimer.milliseconds());
+            }
+            if (showCameraTelemetry) {
+                telemetry.addLine("--- Camera ---");
+                if (whitePixelProcessor.getDetectedPixel() != null) {
+                    telemetry.addData("pixelX", whitePixelProcessor.getDetectedPixel().x);
+                    telemetry.addData("pixelY", whitePixelProcessor.getDetectedPixel().y);
+                    telemetry.addData("pixelWidth", whitePixelProcessor.getDetectedPixel().width);
+                }
+            }
             telemetry.update();
         }
     }

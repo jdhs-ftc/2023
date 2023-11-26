@@ -17,12 +17,13 @@ public class MeepMeepTesting {
                 .setDimensions(14,18)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, 63, Math.toRadians(90)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-36, 60, Math.toRadians(90)))
                 .setReversed(true)
                 // GOTO GROUND PIXEL
-                .splineToSplineHeading(new Pose2d(32,33, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(-36,32, Math.toRadians(180)), Math.toRadians(-90))
                 .endTrajectory()
                 /*
+                .stopAndAdd(drive.CorrectWithTagAction())
                 .stopAndAdd(telemetryPacket -> {
                     motorControlActions.motorControl.claw.setPosition(0.95);
                     return false;
@@ -31,7 +32,9 @@ public class MeepMeepTesting {
                  */
                 // GOTO BACKBOARD
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(50.5,37, Math.toRadians(180)), Math.toRadians(0))
+                .setTangent(Math.toRadians(0))
+                        .splineTo(new Vector2d(-36, 55), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(53,40, Math.toRadians(180)), Math.toRadians(0))
                 /*
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
@@ -39,28 +42,12 @@ public class MeepMeepTesting {
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(1); return false;}))
 
                  */
+
                 .endTrajectory()
 
-                // STACK
-                .splineTo(new Vector2d(-12, 60), Math.toRadians(180))
-                .splineTo(new Vector2d(-61,35), Math.toRadians(180))
-                // GRAB PIXEL
-                .endTrajectory()
-                .strafeTo(new Vector2d(-56,35))
-                // PIXEL TO HOOK
-                .endTrajectory()
-                .strafeTo(new Vector2d(-61,35))
-                // GRAB PIXEL
-                .endTrajectory()
-                .setTangent(Math.toRadians(0))
-                .splineTo(new Vector2d(-12, 60), Math.toRadians(0))
-                .splineTo(new Vector2d(6, 60), Math.toRadians(0))
-                .splineTo(new Vector2d(50.5,31), Math.toRadians(0))
-                // PLACE PIXEL
 
                 // PARK
-                .setTangent(Math.toRadians(180))
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,13, Math.toRadians(180)), Math.toRadians(0))
                 .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_CENTERSTAGE_JUICE_DARK)

@@ -4,7 +4,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.Vector2d;
 
-public class KalmanFilter { // todo: coded at 12:36 am.
+public class KalmanFilter {
     public static final class KalmanCoefficients {
         public final double Q;
         public final double R;

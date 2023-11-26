@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto.blue;
+package org.firstinspires.ftc.teamcode.auto.blue.LeftBlue2plus2;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-@Autonomous
+@Autonomous(preselectTeleOp = "Teleop Field Centric")
 public class LeftBlue2plus2ClosePark extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?
@@ -20,7 +20,8 @@ public class LeftBlue2plus2ClosePark extends AbstractVisionOpMode {
      */
     @Override
     public PoseStorage.Team team() {
-        return PoseStorage.Team.BlUE;
+        this.getClass().getPackage().getName();
+        return PoseStorage.Team.BLUE;
     }
 
     /**

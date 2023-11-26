@@ -23,7 +23,7 @@ public class Helpers {
      * @param aprilTagPoseFtc the AprilTagPoseFtc to convert
      * @return equivalent VectorF
      */
-    public static VectorF tagPoseToVectorF(AprilTagPoseFtc aprilTagPoseFtc) { // TODO: this is probably wrong somehow
+    public static VectorF tagPoseToVectorF(AprilTagPoseFtc aprilTagPoseFtc) {
         return new VectorF(new float[] {
                 (float) aprilTagPoseFtc.x,
                 (float) aprilTagPoseFtc.y,

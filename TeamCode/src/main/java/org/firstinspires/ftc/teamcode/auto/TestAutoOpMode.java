@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.auto;
 
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -41,15 +41,15 @@ public class TestAutoOpMode extends ActionOpMode {
 
 
         AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(12, -60, Math.toRadians(-90)), aprilTag);
-        Action traj =
-                drive.actionBuilder(drive.pose)
+        SequentialAction traj =
+                (SequentialAction) drive.actionBuilder(drive.pose)
                         .setReversed(true)
                         .strafeTo(new Vector2d(12,-55))
                         .splineToSplineHeading(new Pose2d(48,-36,Math.toRadians(180)), Math.toRadians(0))
                         .stopAndAdd(drive.CorrectWithTagAction())
                         .splineToConstantHeading(new Vector2d(-60,-37), Math.toRadians(180))
-                        .stopAndAdd(motorControlActions.waitUntilFinished())
                 .build();
+
 
 
         waitForStart();

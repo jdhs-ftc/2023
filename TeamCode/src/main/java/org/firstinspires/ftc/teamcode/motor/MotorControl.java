@@ -199,7 +199,7 @@ public class MotorControl {
         public void moveLowPlace() {
             setTargetPosition(60);
             lastPreset = Preset.LOW_PLACE;
-        } // TODO: TUNE
+        }
 
         public void moveDown() {
             this.setTargetPosition(0);

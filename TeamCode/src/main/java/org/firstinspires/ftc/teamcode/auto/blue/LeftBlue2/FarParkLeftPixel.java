@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto.blue;
+package org.firstinspires.ftc.teamcode.auto.blue.LeftBlue2;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 
-@Autonomous
-public class LeftBlueBothClosePark extends AbstractVisionOpMode {
+@Autonomous(name = "TEST ME; Blue Left 2 Far Park Left Pixel")
+public class FarParkLeftPixel extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?
      *
@@ -21,7 +21,7 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
      */
     @Override
     public PoseStorage.Team team() {
-        return PoseStorage.Team.BlUE;
+        return PoseStorage.Team.BLUE;
     }
 
     /**
@@ -48,7 +48,7 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
                 })
                 // GOTO BACKBOARD
                 .setReversed(true)
-                .splineToLinearHeading(new Pose2d(50,37, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(53,40, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
@@ -59,7 +59,7 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
 
 
                 // PARK
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,13, Math.toRadians(180)), Math.toRadians(0))
                 .build();
     }
 
@@ -80,7 +80,7 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
 
                 // GOTO BACKBOARD
                 .strafeTo(new Vector2d(13,35))
-                .splineToSplineHeading(new Pose2d(50.25,31, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(53,31, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
@@ -91,7 +91,7 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
                 .endTrajectory()
 
                 // PARK
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,13, Math.toRadians(180)), Math.toRadians(0))
                 .build();
     }
 
@@ -109,12 +109,12 @@ public class LeftBlueBothClosePark extends AbstractVisionOpMode {
                 })
                 // PLACE HERE
                 .strafeTo(new Vector2d(9,32))
-                .splineTo(new Vector2d(50,25), Math.toRadians(0))
+                .splineTo(new Vector2d(55.75,29), Math.toRadians(0))
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(1); return false;}))
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,13, Math.toRadians(180)), Math.toRadians(0))
                 .build();
     }
 }
