@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.auto;
 
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -49,6 +50,11 @@ public class TestAutoOpMode extends ActionOpMode {
                         .stopAndAdd(drive.CorrectWithTagAction())
                         .splineToConstantHeading(new Vector2d(-60,-37), Math.toRadians(180))
                 .build();
+
+        Action traj2 = drive.actionBuilder(drive.pose)
+                .stopAndAdd(traj)
+                .build();
+
 
 
 

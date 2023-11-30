@@ -13,14 +13,14 @@ public class MeepMeepTesting {
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(40, 40, Math.toRadians(180), Math.toRadians(180), 15)
-                .setDimensions(14,18)
+                .setConstraints(40, 30, Math.toRadians(180), Math.toRadians(180), 15)
+                .setDimensions(14,17.25)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-36, 60, Math.toRadians(90)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-36, 62, Math.toRadians(90)))
                 .setReversed(true)
                 // GOTO GROUND PIXEL
-                .splineToSplineHeading(new Pose2d(-36,32, Math.toRadians(180)), Math.toRadians(-90))
+                .splineToSplineHeading(new Pose2d(-46,21, Math.toRadians(90)), Math.toRadians(-90))
                 .endTrajectory()
                 /*
                 .stopAndAdd(drive.CorrectWithTagAction())
@@ -32,9 +32,9 @@ public class MeepMeepTesting {
                  */
                 // GOTO BACKBOARD
                 .setReversed(true)
-                .setTangent(Math.toRadians(0))
-                        .splineTo(new Vector2d(-36, 55), Math.toRadians(0))
-                .splineToLinearHeading(new Pose2d(53,40, Math.toRadians(180)), Math.toRadians(0))
+                .splineTo(new Vector2d(-24, 18), Math.toRadians(0))
+                .splineTo(new Vector2d(20, 18), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(50.5,40, Math.toRadians(180)), Math.toRadians(0))
                 /*
                 .stopAndAdd(new SequentialAction(
                         telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},

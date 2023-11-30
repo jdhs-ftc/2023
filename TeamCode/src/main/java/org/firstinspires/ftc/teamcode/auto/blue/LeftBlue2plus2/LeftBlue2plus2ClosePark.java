@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
-@Autonomous(preselectTeleOp = "Teleop Field Centric")
+@Autonomous(preselectTeleOp = "Teleop Field Centric", name = "Left Blue, 2+2, Close Park, Left Pixel", group = "Blue")
 public class LeftBlue2plus2ClosePark extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?
