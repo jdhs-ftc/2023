@@ -70,6 +70,7 @@ public class LocalizationTest extends LinearOpMode {
                     telemetry.addData("tagRelBearing", aprilTag.getDetections().get(0).ftcPose.bearing);
                 }
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
+                telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
                 telemetry.update();
             }
         } else if (TuningOpModes.DRIVE_CLASS.equals(TankDrive.class)) {
@@ -90,7 +91,7 @@ public class LocalizationTest extends LinearOpMode {
 
                 telemetry.addData("x", drive.pose.position.x);
                 telemetry.addData("y", drive.pose.position.y);
-                telemetry.addData("heading", drive.pose.heading);
+                telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
                 telemetry.update();
             }
         } else {

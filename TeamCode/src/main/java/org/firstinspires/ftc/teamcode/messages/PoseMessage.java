@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.messages;
 
 import androidx.annotation.NonNull;
 
@@ -14,7 +14,7 @@ public final class PoseMessage {
         this.timestamp = System.nanoTime();
         this.x = pose.position.x;
         this.y = pose.position.y;
-        this.heading = pose.heading.log();
+        this.heading = pose.heading.toDouble();
     }
 
     @NonNull
