@@ -64,6 +64,13 @@ public class MotorControlActions {
         );
     }
 
+    public Action autoPlace() {
+        return new SequentialAction(
+                telemetryPacket -> {motorControl.autoPlacer.setPosition(0.3); return false;},
+                new SleepAction(0.5),
+                telemetryPacket -> {motorControl.autoPlacer.setPosition(1); return false;});
+    }
+
     public class ClawArm {
         public Action reset() {
             return new Action() {

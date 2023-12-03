@@ -21,9 +21,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 public final class TwoDeadWheelLocalizer implements Localizer {
     public static class Params {
         /** @noinspection CanBeFinal*/
-        public double parYTicks = -10829.578572303413; //-10523.111420277954; //-9882.837309096401;
+        public double parYTicks = 9431; //-10523.111420277954; //-9882.837309096401;
         /** @noinspection CanBeFinal*/
-        public double perpXTicks = -11124.342997149228;
+        public double perpXTicks = -10486;
     }
 
     /** @noinspection CanBeFinal*/
