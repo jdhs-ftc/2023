@@ -7,7 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 
-public class MotorControlActions {
+public class MotorActions {
     public final MotorControl motorControl;
     public final Slide slide;
     public final ClawArm clawArm;
@@ -15,7 +15,7 @@ public class MotorControlActions {
     public final AutoPlacer autoPlacer;
     public final Hook hook;
 
-    public MotorControlActions(MotorControl motorControl) {
+    public MotorActions(MotorControl motorControl) {
         this.motorControl = motorControl;
         this.slide = new Slide();
         this.clawArm = new ClawArm();
@@ -45,7 +45,7 @@ public class MotorControlActions {
     public Action pixelToHook() {
         return new SequentialAction(
                 telemetryPacket -> {motorControl.clawArm.moveToHook(); return false;},
-                new SleepAction(1),
+                new SleepAction(1.25),
                 telemetryPacket -> { motorControl.claw.setPosition(0.95); return false;},
                 new SleepAction(0.25),
                 telemetryPacket -> {motorControl.clawArm.moveDown(); return false;},

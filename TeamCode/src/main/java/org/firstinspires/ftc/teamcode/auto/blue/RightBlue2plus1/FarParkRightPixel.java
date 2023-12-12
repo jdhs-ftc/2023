@@ -1,18 +1,21 @@
-package org.firstinspires.ftc.teamcode.auto.blue.RightBlue2;
+package org.firstinspires.ftc.teamcode.auto.blue.RightBlue2plus1;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
-@Autonomous(preselectTeleOp = "Teleop Field Centric", name = "Right Blue, Far Park, Left Pixel", group = "Blue")
-public class FarParkLeftPixel extends AbstractVisionOpMode {
+@Autonomous(preselectTeleOp = "Teleop Field Centric", name = "2+1 Right Blue, Far Park, Right Pixel", group = "Blue")
+@Disabled
+//TODO: DOESN'T
+public class FarParkRightPixel extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?
      *
@@ -50,7 +53,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(0))
                 .splineTo(new Vector2d(20, 12), Math.toRadians(0))
                 .afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(52.5,41, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(52.5,38, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new SequentialAction(motorActions.autoPlace()))
                 .endTrajectory()
 
@@ -74,7 +77,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineToConstantHeading(new Vector2d(-28, 12), Math.toRadians(0))
                 .splineTo(new Vector2d(20, 12), Math.toRadians(0))
                 .afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(56.5,35, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(56.5,32, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new SequentialAction(motorActions.autoPlace()))
                 .endTrajectory()
 
@@ -102,7 +105,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(0))
                 .splineTo(new Vector2d(20, 12), Math.toRadians(0))
                 .afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(56.5,29, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(56.5,26, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new SequentialAction(motorActions.autoPlace()))
                 .endTrajectory()
 

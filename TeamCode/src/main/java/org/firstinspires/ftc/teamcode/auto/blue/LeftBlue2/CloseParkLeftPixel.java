@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
-import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
-import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
+import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
 @Autonomous(preselectTeleOp = "Teleop Field Centric", name = "Left Blue, Close Park, Left Pixel", group = "Blue")
 @Disabled
@@ -38,22 +38,22 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajLeft(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajLeft(AprilTagDrive drive, MotorActions motorActions) {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
                 .splineToSplineHeading(new Pose2d(29,32, Math.toRadians(180)), Math.toRadians(0))
                 .endTrajectory()
                 .stopAndAdd(drive.CorrectWithTagAction())
-                .stopAndAdd(() -> motorControlActions.motorControl.claw.setPosition(0.95))
+                .stopAndAdd(() -> motorActions.motorControl.claw.setPosition(0.95))
                 // GOTO BACKBOARD
                 .setReversed(true)
                 .splineToLinearHeading(new Pose2d(53,40, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
-                        new InstantAction(() -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5);}),
+                        new InstantAction(() -> {motorActions.motorControl.autoPlacer.setPosition(0.5);}),
                         new SleepAction(0.5),
-                        new InstantAction(() -> {motorControlActions.motorControl.autoPlacer.setPosition(1);})))
+                        new InstantAction(() -> {motorActions.motorControl.autoPlacer.setPosition(1);})))
 
                 .endTrajectory()
 
@@ -64,7 +64,7 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajCenter(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajCenter(AprilTagDrive drive, MotorActions motorActions) {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
@@ -73,7 +73,7 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
                 .stopAndAdd(drive.CorrectWithTagAction())
 
                 .stopAndAdd(telemetryPacket -> {
-                    motorControlActions.motorControl.claw.setPosition(0.95);
+                    motorActions.motorControl.claw.setPosition(0.95);
                     return false;
                 })
 
@@ -83,9 +83,9 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
                 .splineToSplineHeading(new Pose2d(53,31, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(1); return false;}))
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(1); return false;}))
 
 
                 .endTrajectory()
@@ -96,7 +96,7 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajRight(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajRight(AprilTagDrive drive, MotorActions motorActions) {
 
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
@@ -104,16 +104,16 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
                 .endTrajectory()
                 .stopAndAdd(drive.CorrectWithTagAction())
                 .stopAndAdd(telemetryPacket -> {
-                    motorControlActions.motorControl.claw.setPosition(0.95);
+                    motorActions.motorControl.claw.setPosition(0.95);
                     return false;
                 })
                 // PLACE HERE
                 .strafeTo(new Vector2d(9,32))
                 .splineTo(new Vector2d(55.75,29), Math.toRadians(0))
                 .stopAndAdd(new SequentialAction(
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(1); return false;}))
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(1); return false;}))
                 .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
                 .build();
     }

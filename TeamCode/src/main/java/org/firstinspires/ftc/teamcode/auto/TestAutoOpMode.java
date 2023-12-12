@@ -13,9 +13,9 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.ActionOpMode;
 import org.firstinspires.ftc.teamcode.Helpers.RaceParallelCommand;
 import org.firstinspires.ftc.teamcode.PoseStorage;
-import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.motor.MotorActions;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
-import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -38,7 +38,7 @@ public class TestAutoOpMode extends ActionOpMode {
                 .build();
 
         MotorControl motorControl = new MotorControl(hardwareMap);
-        MotorControlActions motorControlActions = new MotorControlActions(motorControl);
+        MotorActions motorActions = new MotorActions(motorControl);
 
 
         AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(12, -60, Math.toRadians(-90)), aprilTag);
@@ -64,7 +64,7 @@ public class TestAutoOpMode extends ActionOpMode {
 
         Actions.runBlocking(new RaceParallelCommand(
                 traj,
-                motorControlActions.update()
+                motorActions.update()
         ));
 
 

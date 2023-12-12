@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import com.acmerobotics.roadrunner.Action;
 
-import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
-import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
+import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
 public abstract class ChoosableAuto extends AbstractVisionOpMode {
     public abstract AbstractVisionOpMode parkClosePixelPlaceLeftAuto();
@@ -16,52 +16,52 @@ public abstract class ChoosableAuto extends AbstractVisionOpMode {
 
 
     @Override
-    public Action trajLeft(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajLeft(AprilTagDrive drive, MotorActions motorActions) {
         if (parkClose) {
             if (pixelPlaceLeft) {
-                return parkClosePixelPlaceLeftAuto().trajLeft(drive, motorControlActions);
+                return parkClosePixelPlaceLeftAuto().trajLeft(drive, motorActions);
             } else {
-                return parkClosePixelPlaceRightAuto().trajLeft(drive, motorControlActions);
+                return parkClosePixelPlaceRightAuto().trajLeft(drive, motorActions);
             }
         } else {
             if (pixelPlaceLeft) {
-                return parkFarPixelPlaceLeftAuto().trajLeft(drive, motorControlActions);
+                return parkFarPixelPlaceLeftAuto().trajLeft(drive, motorActions);
             } else {
-                return parkFarPixelPlaceRightAuto().trajLeft(drive, motorControlActions);
+                return parkFarPixelPlaceRightAuto().trajLeft(drive, motorActions);
             }
         }
     }
 
     @Override
-    public Action trajCenter(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajCenter(AprilTagDrive drive, MotorActions motorActions) {
         if (parkClose) {
             if (pixelPlaceLeft) {
-                return parkClosePixelPlaceLeftAuto().trajCenter(drive, motorControlActions);
+                return parkClosePixelPlaceLeftAuto().trajCenter(drive, motorActions);
             } else {
-                return parkClosePixelPlaceRightAuto().trajCenter(drive, motorControlActions);
+                return parkClosePixelPlaceRightAuto().trajCenter(drive, motorActions);
             }
         } else {
             if (pixelPlaceLeft) {
-                return parkFarPixelPlaceLeftAuto().trajCenter(drive, motorControlActions);
+                return parkFarPixelPlaceLeftAuto().trajCenter(drive, motorActions);
             } else {
-                return parkFarPixelPlaceRightAuto().trajCenter(drive, motorControlActions);
+                return parkFarPixelPlaceRightAuto().trajCenter(drive, motorActions);
             }
         }
     }
 
     @Override
-    public Action trajRight(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajRight(AprilTagDrive drive, MotorActions motorActions) {
         if (parkClose) {
             if (pixelPlaceLeft) {
-                return parkClosePixelPlaceLeftAuto().trajRight(drive, motorControlActions);
+                return parkClosePixelPlaceLeftAuto().trajRight(drive, motorActions);
             } else {
-                return parkClosePixelPlaceRightAuto().trajRight(drive, motorControlActions);
+                return parkClosePixelPlaceRightAuto().trajRight(drive, motorActions);
             }
         } else {
             if (pixelPlaceLeft) {
-                return parkFarPixelPlaceLeftAuto().trajRight(drive, motorControlActions);
+                return parkFarPixelPlaceLeftAuto().trajRight(drive, motorActions);
             } else {
-                return parkFarPixelPlaceRightAuto().trajRight(drive, motorControlActions);
+                return parkFarPixelPlaceRightAuto().trajRight(drive, motorActions);
             }
         }
     }

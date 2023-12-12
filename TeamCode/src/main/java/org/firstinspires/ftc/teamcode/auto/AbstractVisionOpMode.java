@@ -30,9 +30,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Helpers;
 import org.firstinspires.ftc.teamcode.PoseStorage;
-import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.motor.MotorActions;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
-import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
 import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
 import org.firstinspires.ftc.teamcode.vision.PipelineProcessor;
 import org.firstinspires.ftc.teamcode.vision.pipelines.TeamPropDeterminationPipeline;
@@ -62,9 +62,9 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
      * @return the starting pose
      */
     public abstract Pose2d startPose();
-    public abstract Action trajLeft(AprilTagDrive drive, MotorControlActions motorControlActions);
-    public abstract Action trajCenter(AprilTagDrive drive, MotorControlActions motorControlActions);
-    public abstract Action trajRight(AprilTagDrive drive, MotorControlActions motorControlActions);
+    public abstract Action trajLeft(AprilTagDrive drive, MotorActions motorActions);
+    public abstract Action trajCenter(AprilTagDrive drive, MotorActions motorActions);
+    public abstract Action trajRight(AprilTagDrive drive, MotorActions motorActions);
 
     /**
      * The INIT-loop
@@ -90,8 +90,8 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
     public void runOpMode()
     {
         MotorControl motorControl = new MotorControl(hardwareMap);
-        MotorControlActions motorControlActions = new MotorControlActions(motorControl);
-        Actions.runBlocking(motorControlActions.claw.grab());
+        MotorActions motorActions = new MotorActions(motorControl);
+        Actions.runBlocking(motorActions.claw.grab());
 
 
         pipeline = new TeamPropDeterminationPipeline(telemetry);
@@ -118,9 +118,9 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         AprilTagDrive drive = new AprilTagDrive(hardwareMap, startPose(), aprilTag);
         //MecanumDrive drive = new MecanumDrive(hardwareMap, startPose()); // TODO: THIS WILL BREAK THINGS
 
-        Action trajLeft = trajLeft(drive, motorControlActions);
-        Action trajCenter = trajCenter(drive, motorControlActions);
-        Action trajRight = trajRight(drive, motorControlActions);
+        Action trajLeft = trajLeft(drive, motorActions);
+        Action trajCenter = trajCenter(drive, motorActions);
+        Action trajRight = trajRight(drive, motorActions);
 
 
         motorControl.claw.setPosition(0.7);
@@ -160,9 +160,9 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
                 telemetry.update();
             }
             if (reloadTrajectories.getAndSet(false)) {
-                trajLeft = trajLeft(drive, motorControlActions);
-                trajCenter = trajCenter(drive, motorControlActions);
-                trajRight = trajRight(drive, motorControlActions);
+                trajLeft = trajLeft(drive, motorActions);
+                trajCenter = trajCenter(drive, motorActions);
+                trajRight = trajRight(drive, motorActions);
             }
 
 
@@ -192,7 +192,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
             {
                 Actions.runBlocking(new Helpers.RaceParallelCommand(
                         trajLeft,
-                        motorControlActions.update()
+                        motorActions.update()
                 ));
                 break;
             }
@@ -201,7 +201,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
             {
                 Actions.runBlocking(new Helpers.RaceParallelCommand(
                         trajCenter,
-                        motorControlActions.update()
+                        motorActions.update()
                 ));
                 break;
             }
@@ -211,7 +211,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
 
                 Actions.runBlocking(new Helpers.RaceParallelCommand(
                         trajRight,
-                        motorControlActions.update()
+                        motorActions.update()
                 ));
                 break;
             }

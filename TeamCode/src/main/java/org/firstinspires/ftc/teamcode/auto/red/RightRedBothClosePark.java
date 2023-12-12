@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
-import org.firstinspires.ftc.teamcode.experiments.AprilTagDrive;
-import org.firstinspires.ftc.teamcode.motor.MotorControlActions;
+import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
 @Autonomous(preselectTeleOp = "Teleop Field Centric")
 public class RightRedBothClosePark extends AbstractVisionOpMode {
@@ -30,7 +30,7 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajRight(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajRight(AprilTagDrive drive, MotorActions motorActions) {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
@@ -38,7 +38,7 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
                 .endTrajectory()
                 .stopAndAdd(drive.CorrectWithTagAction())
                 .stopAndAdd(telemetryPacket -> {
-                    motorControlActions.motorControl.claw.setPosition(0.95);
+                    motorActions.motorControl.claw.setPosition(0.95);
                     return false;
                 })
                 // GOTO BACKBOARD
@@ -46,9 +46,9 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
                 .splineToLinearHeading(new Pose2d(53,-40, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(1); return false;}))
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(1); return false;}))
 
                 .endTrajectory()
 
@@ -59,7 +59,7 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajCenter(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajCenter(AprilTagDrive drive, MotorActions motorActions) {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
@@ -68,7 +68,7 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
                 .stopAndAdd(drive.CorrectWithTagAction())
 
                 .stopAndAdd(telemetryPacket -> {
-                    motorControlActions.motorControl.claw.setPosition(0.95);
+                    motorActions.motorControl.claw.setPosition(0.95);
                     return false;
                 })
 
@@ -78,9 +78,9 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
                 .splineToSplineHeading(new Pose2d(53,-36, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(1); return false;}))
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(1); return false;}))
 
 
                 .endTrajectory()
@@ -91,7 +91,7 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajLeft(AprilTagDrive drive, MotorControlActions motorControlActions) {
+    public Action trajLeft(AprilTagDrive drive, MotorActions motorActions) {
 
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
@@ -102,7 +102,7 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
 
                 .stopAndAdd(drive.CorrectWithTagAction())
                 .stopAndAdd(telemetryPacket -> {
-                    motorControlActions.motorControl.claw.setPosition(0.95);
+                    motorActions.motorControl.claw.setPosition(0.95);
                     return false;
                 })
 
@@ -114,9 +114,9 @@ public class RightRedBothClosePark extends AbstractVisionOpMode {
                 .setTangent(180)
 
                 .stopAndAdd(new SequentialAction(
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(0.5); return false;},
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
-                        telemetryPacket -> {motorControlActions.motorControl.autoPlacer.setPosition(1); return false;}))
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(1); return false;}))
 
 
                 .splineToLinearHeading(new Pose2d(60,-60, Math.toRadians(180)), Math.toRadians(0))

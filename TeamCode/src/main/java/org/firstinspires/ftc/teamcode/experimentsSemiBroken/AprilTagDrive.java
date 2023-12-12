@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.experiments;
+package org.firstinspires.ftc.teamcode.experimentsSemiBroken;
 
 import androidx.annotation.NonNull;
 
@@ -137,16 +137,6 @@ public class AprilTagDrive extends MecanumDrive {
             yPos = (tagPos.y - detection.ftcPose.x) - PARAMS.cameraOffset.y;
         }*/
 
-        // take the tag's field position & subtract it from the position relative to camera to get the camera's position
-        // TODO: probably wrong, I don't quite comprehend this math
-        //Vector2d globalCameraPos = tagPos.minus(Helpers.rotateVector(Helpers.toVector2d(Helpers.tagPoseToVectorF(detection.ftcPose)),-(localizerPose.heading.log() + PARAMS.cameraYawOffset)));
-
-
-        // use the offsets to get the robot's position from the camera's position
-        //Vector2d RobotPos = globalCameraPos.plus(PARAMS.cameraOffset.unaryMinus());
-
-        // TODO: will not work for diff tags then backdrop
-        //return Helpers.rotateVector(new Vector2d(xPos, yPos), tagHeading - Math.toRadians(180));
         return new Vector2d(xPos, yPos);
     }
 
