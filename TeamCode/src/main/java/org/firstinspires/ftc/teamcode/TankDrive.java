@@ -40,12 +40,12 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
-import org.firstinspires.ftc.teamcode.messages.MecanumEncodersMessage;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.messages.TankCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.TankEncodersMessage;
@@ -62,6 +62,8 @@ public final class TankDrive {
     /** @noinspection CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal, CanBeFinal */
     public static class Params {
         // IMU orientation
+        // TODO: fill in these values based on
+        //   see https://ftc-docs.firstinspires.org/en/latest/programming_resources/imu/imu.html?highlight=imu#physical-hub-mounting
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.UP;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
@@ -136,9 +138,7 @@ public final class TankDrive {
                 for (DcMotorEx m : leftMotors) {
                     Encoder e = new OverflowEncoder(new RawEncoder(m));
                     leftEncs.add(e);
-                    lastLeftPos += e.getPositionAndVelocity().position;
                 }
-                lastLeftPos /= leftEncs.size();
                 this.leftEncs = Collections.unmodifiableList(leftEncs);
             }
 
@@ -147,11 +147,22 @@ public final class TankDrive {
                 for (DcMotorEx m : rightMotors) {
                     Encoder e = new OverflowEncoder(new RawEncoder(m));
                     rightEncs.add(e);
-                    lastRightPos += e.getPositionAndVelocity().position;
                 }
-                lastRightPos /= rightEncs.size();
                 this.rightEncs = Collections.unmodifiableList(rightEncs);
             }
+
+            // TODO: reverse encoder directions if needed
+            // leftEncs.get(0).setDirection(DcMotorSimple.Direction.REVERSE);
+
+            for (Encoder e : leftEncs) {
+                lastLeftPos += e.getPositionAndVelocity().position;
+            }
+            lastLeftPos /= leftEncs.size();
+
+            for (Encoder e : rightEncs) {
+                lastRightPos += e.getPositionAndVelocity().position;
+            }
+            lastRightPos /= rightEncs.size();
         }
 
         @Override
@@ -207,6 +218,9 @@ public final class TankDrive {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
+        // TODO: make sure your config has motors with these names (or change them)
+        //   add additional motors on each side if you have them
+        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         leftMotors = Arrays.asList(hardwareMap.get(DcMotorEx.class, "left"));
         rightMotors = Arrays.asList(hardwareMap.get(DcMotorEx.class, "right"));
 
@@ -217,6 +231,11 @@ public final class TankDrive {
             m.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
+        // TODO: reverse motor directions if needed
+        //   leftMotors.get(0).setDirection(DcMotorSimple.Direction.REVERSE);
+
+        // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
+        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
