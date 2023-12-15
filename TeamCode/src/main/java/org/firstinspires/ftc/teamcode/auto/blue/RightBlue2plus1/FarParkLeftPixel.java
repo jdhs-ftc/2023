@@ -108,13 +108,14 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
-                .splineToConstantHeading(new Vector2d(-48,21), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-49,21), Math.toRadians(-90))
                 .endTrajectory()
                 .stopAndAdd(motorActions.claw.release())
 
                 // GOTO STACK
                 .setReversed(true)
-                .splineToSplineHeading(new Pose2d(-62,11.5,Math.toRadians(180)), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-48, 14), Math.toRadians(180))
+                .splineToSplineHeading(new Pose2d(-62,14,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
                 .stopAndAdd(motorActions.claw.grab())
                 .waitSeconds(0.5)
@@ -123,10 +124,10 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 // GOTO BACKBOARD
                 .setReversed(true)
                 .afterTime(0.5, motorActions.pixelToHook())
-                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(0))
-                .splineTo(new Vector2d(20, 12), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-36, 14), Math.toRadians(0))
+                .splineTo(new Vector2d(20, 14), Math.toRadians(0))
                 //.afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(56.5,29, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(56.5,32, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 

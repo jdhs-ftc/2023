@@ -58,8 +58,8 @@ public class TeleopFieldCentric extends LinearOpMode {
     final WhitePixelProcessor whitePixelProcessor = new WhitePixelProcessor(telemetry);
     final CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
-    boolean showMotorTelemetry = false;
-    boolean showStateTelemetry = false;
+    boolean showMotorTelemetry = true;
+    boolean showStateTelemetry = true;
     boolean showLoopTimes = false;
     boolean showTelemetryMenu = false;
     boolean showPoseTelemetry = false;
@@ -345,7 +345,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                     break;
                 case PIXEL_TO_HOOK:
                     motorControl.clawArm.moveToHook();
-                    motorControl.slide.setTargetPosition(0);
+                    motorControl.slide.setTargetPosition(-60);
                     if (liftTimer.milliseconds() > 1000) { // prev 750
                         pixelInClaw = false;
                         pixelInHook = true;
@@ -374,7 +374,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 case PLACE:
                     if (liftTimer.milliseconds() > 750) {
                         pixelInHook = false;
-                        motorControl.hookArm.setPosition(1);
+                        motorControl.hookArm.setPosition(0.925); //1
                         motorControl.clawArm.moveDown();
                         motorControl.slide.setTargetPosition(-40);
                         liftState = LiftState.IDLE;
@@ -385,7 +385,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                     break;
             }
             if (pixelInClaw) {
-                motorControl.claw.setPosition(0.85);
+                motorControl.claw.setPosition(0.82); //0.85
             } else {
                 motorControl.claw.setPosition(0.94);
             }
@@ -457,15 +457,6 @@ public class TeleopFieldCentric extends LinearOpMode {
                 telemetry.addData("SLIDE CURRENT", motorControl.slide.motor.getCurrent(CurrentUnit.AMPS));
             }
 
-            telemetry.addAction(() -> showTelemetryMenu = !showTelemetryMenu);
-
-            if (showTelemetryMenu) {
-                telemetry.addAction(() -> showPoseTelemetry = !showPoseTelemetry);
-                telemetry.addAction(() -> showMotorTelemetry = !showMotorTelemetry);
-                telemetry.addAction(() -> showStateTelemetry = !showStateTelemetry);
-                telemetry.addAction(() -> showLoopTimes = !showLoopTimes);
-                telemetry.addAction(() -> showCameraTelemetry = !showCameraTelemetry);
-            }
 
 
             if (showPoseTelemetry) {

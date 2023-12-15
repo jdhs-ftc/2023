@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  * This class is used to control the motor systems on the robot.
  */
 public class MotorControl {
+
     public final Servo claw;
     public final Servo hookArm;
     public final Slide slide;
@@ -76,6 +77,7 @@ public class MotorControl {
      * @param hardwareMap The hardware map to use to get the motors.
      */
     public MotorControl(@NonNull HardwareMap hardwareMap) {
+        // TODO; probably not needed to automate init, but if you did use annotations
         clawArm = new ClawArm(hardwareMap);
         slide = new Slide(hardwareMap);
 
@@ -255,7 +257,7 @@ public class MotorControl {
             // obtain the encoder position and calculate the error
             double slideError = targetPosition - motor.getCurrentPosition();
             motor.setTargetPosition((int) targetPosition);
-            motor.setTargetPositionTolerance(10);
+            motor.setTargetPositionTolerance(5);
             if (slideError > 0) {
                 motor.setPower(0.8);
             } else {
