@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
 @Autonomous(preselectTeleOp = "Teleop Field Centric", name = "Right, Blue, Far Park, Right Pixel", group = "Blue")
+@Disabled
 public class FarParkRightPixel extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?

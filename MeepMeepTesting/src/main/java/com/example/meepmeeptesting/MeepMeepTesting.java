@@ -22,17 +22,17 @@ public class MeepMeepTesting {
                 .setDimensions(14,17.25)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-36, 62, Math.toRadians(90)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-36, -62, Math.toRadians(-90)))
                 .setReversed(true)
                 // GOTO GROUND PIXEL
-                .splineToConstantHeading(new Vector2d(-50,21), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-49,-21), Math.toRadians(90))
                 .endTrajectory()
                 .stopAndAdd(motorActions.claw.release())
 
                 // GOTO STACK
                 .setReversed(true)
-                .splineToSplineHeading(new Pose2d(-48, 12.5, Math.toRadians(180)), Math.toRadians(180))
-                .splineToSplineHeading(new Pose2d(-62,12.5,Math.toRadians(180)), Math.toRadians(180))
+                .splineToConstantHeading(new Vector2d(-48, -12), Math.toRadians(180))
+                .splineToSplineHeading(new Pose2d(-62,-12,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
                 .stopAndAdd(motorActions.claw.grab())
                 .waitSeconds(0.5)
@@ -41,16 +41,16 @@ public class MeepMeepTesting {
                 // GOTO BACKBOARD
                 .setReversed(true)
                 .afterTime(0.5, motorActions.pixelToHook())
-                .splineToConstantHeading(new Vector2d(-36, 12), Math.toRadians(0))
-                .splineTo(new Vector2d(20, 12), Math.toRadians(0))
+                .splineToConstantHeading(new Vector2d(-36, -14), Math.toRadians(0))
+                .splineTo(new Vector2d(20, -14), Math.toRadians(0))
                 //.afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(56.5,29, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(56.5,-30, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 
 
                 // PARK
-                .splineToLinearHeading(new Pose2d(54,14, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,-14, Math.toRadians(180)), Math.toRadians(0))
                 .build());
 
         RoadRunnerBotEntity myBot2 = new DefaultBotBuilder(meepMeep)

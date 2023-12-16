@@ -21,6 +21,9 @@
 
 package org.firstinspires.ftc.teamcode.auto;
 
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
+import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -92,6 +95,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         MotorControl motorControl = new MotorControl(hardwareMap);
         MotorActions motorActions = new MotorActions(motorControl);
         Actions.runBlocking(motorActions.claw.grab());
+        motorControl.slide.setTargetPosition(-100);
 
 
         pipeline = new TeamPropDeterminationPipeline(telemetry);
@@ -183,6 +187,8 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
 
+        motorControl.slide.motor.setMode(STOP_AND_RESET_ENCODER);
+        motorControl.slide.motor.setMode(RUN_TO_POSITION);
         motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
 
 

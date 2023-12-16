@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
 @Autonomous(name = "TEST ME; Blue Left 2 Far Park Left Pixel")
+@Disabled
 public class FarParkLeftPixel extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?

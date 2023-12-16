@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.auto.blue;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.auto.blue.LeftBlue2.CloseParkLeftPixel;
 import org.firstinspires.ftc.teamcode.auto.blue.LeftBlue2.FarParkLeftPixel;
 
 @Autonomous(preselectTeleOp = "Teleop Field Centric")
+@Disabled
 public class LeftBlue2Choosable extends ChoosableAuto {
     /**
      * Is this a red or a blue autonomous?
