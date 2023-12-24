@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.auto.blue.LeftBlue2plus2;
+package org.firstinspires.ftc.teamcode.auto.OLD.LeftBlue2plus2;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -8,9 +8,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
-import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 @Autonomous(preselectTeleOp = "Teleop Field Centric", name = "Left Blue, 2+2, Close Park, Left Pixel", group = "Blue")
 @Disabled

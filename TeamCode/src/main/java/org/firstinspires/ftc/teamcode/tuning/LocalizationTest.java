@@ -8,11 +8,11 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Helpers;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TankDrive;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
-import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
+import org.firstinspires.ftc.teamcode.helpers.Helpers;
+import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;

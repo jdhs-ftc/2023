@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.auto.blue.LeftBlue2;
+package org.firstinspires.ftc.teamcode.auto.OLD.LeftBlue2;
 
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -9,14 +8,14 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
-import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
-@Autonomous(preselectTeleOp = "Teleop Field Centric", name = "Left Blue, Close Park, Left Pixel", group = "Blue")
+@Autonomous(name = "TEST ME; Blue Left 2 Far Park Left Pixel")
 @Disabled
-public class CloseParkLeftPixel extends AbstractVisionOpMode {
+public class FarParkLeftPixel extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?
      *
@@ -45,21 +44,24 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
                 .splineToSplineHeading(new Pose2d(29,32, Math.toRadians(180)), Math.toRadians(0))
                 .endTrajectory()
                 .stopAndAdd(drive.CorrectWithTagAction())
-                .stopAndAdd(() -> motorActions.motorControl.claw.setPosition(0.95))
+                .stopAndAdd(telemetryPacket -> {
+                    motorActions.motorControl.claw.setPosition(0.95);
+                    return false;
+                })
                 // GOTO BACKBOARD
                 .setReversed(true)
                 .splineToLinearHeading(new Pose2d(53,40, Math.toRadians(180)), Math.toRadians(0))
 
                 .stopAndAdd(new SequentialAction(
-                        new InstantAction(() -> {motorActions.motorControl.autoPlacer.setPosition(0.5);}),
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
-                        new InstantAction(() -> {motorActions.motorControl.autoPlacer.setPosition(1);})))
+                        telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(1); return false;}))
 
                 .endTrajectory()
 
 
                 // PARK
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,13, Math.toRadians(180)), Math.toRadians(0))
                 .build();
     }
 
@@ -91,7 +93,7 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
                 .endTrajectory()
 
                 // PARK
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,13, Math.toRadians(180)), Math.toRadians(0))
                 .build();
     }
 
@@ -114,7 +116,7 @@ public class CloseParkLeftPixel extends AbstractVisionOpMode {
                         telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(0.5); return false;},
                         new SleepAction(0.5),
                         telemetryPacket -> {motorActions.motorControl.autoPlacer.setPosition(1); return false;}))
-                .splineToLinearHeading(new Pose2d(60,60, Math.toRadians(180)), Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(54,13, Math.toRadians(180)), Math.toRadians(0))
                 .build();
     }
 }

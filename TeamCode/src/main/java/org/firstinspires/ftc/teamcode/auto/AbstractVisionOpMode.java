@@ -31,13 +31,13 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Helpers;
-import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.helpers.Helpers;
+import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
+import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
+import org.firstinspires.ftc.teamcode.helpers.vision.PipelineProcessor;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
-import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
-import org.firstinspires.ftc.teamcode.vision.PipelineProcessor;
 import org.firstinspires.ftc.teamcode.vision.pipelines.TeamPropDeterminationPipeline;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -48,7 +48,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** <h3>Abstract class for vision-based autonomous</h3>
  * Every vision auto is basically the same, so we use an Abstract class here
  * this allows us to separate the vision code from the actual RR trajectories
- * to make a new auto, just make a class that implements AbstractVisionOpMode
+ * <p>
+ * To make a new auto, just make a class that implements AbstractVisionOpMode
  */
 public abstract class AbstractVisionOpMode extends LinearOpMode
 {
@@ -56,7 +57,9 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         return false;
     };
     /**
-     * Is this a red or a blue autonomous?
+     * Declare what team this autonomous is for
+     * This lets me use that team to automatically select the right vision
+     * Additionally it lets me know which way the drivers think is forward for field centric drive later
      * @return the team
      */
     public abstract PoseStorage.Team team();
@@ -71,8 +74,8 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
 
     /**
      * The INIT-loop
-     * You are expected to override this method
-     * This is where you could have a trajectory selection etc
+     * <p>
+     * This is where trajectory selection could happen like with ChooseableAuto.java, however I never implemented it
      * @return true to recalculate trajectories
      */
     public boolean initLoop() {
@@ -92,42 +95,53 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
     @Override
     public void runOpMode()
     {
+        // Initalize the basic motor control, base PID loops etc
         MotorControl motorControl = new MotorControl(hardwareMap);
+        // MotorActions wraps motor control in RR actions that I can use in trajectories
         MotorActions motorActions = new MotorActions(motorControl);
+        // Grab the preloaded pixel with the claw
         Actions.runBlocking(motorActions.claw.grab());
+        // Helps fix slide drifting up issues, sets a really low target pos then reset
+        // Not sure why slide drifts up, could be encoder issue or RTP jank
         motorControl.slide.setTargetPosition(-100);
 
 
+        // Initialize prop detector
         pipeline = new TeamPropDeterminationPipeline(telemetry);
+        // The auto that's implementing this will have set the team, so we tell the pipeline which color of prop to look for
+        // Honestly not sure why I have this converted to boolean
         pipeline.setBlue(team() == PoseStorage.Team.BLUE);
+
+        // Convert that EOCV pipeline into a new processor using this helper class
         pipelineProcessor = new PipelineProcessor(pipeline);
 
+
+        // Create new apriltag processor using our tuned constants (TUNING FOR OLD WACK CAMERA NOT LOGITECH)
         aprilTag = new AprilTagProcessor.Builder()
                 .setLensIntrinsics(517.0085f, 508.91845f, 322.364324f, 167.9933806f)
                 .build();
 
+        // CameraStreamProcessor is a helper class that lets us see the camera stream on FTC Dashboard
         CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
+        // Initialize with all 3 processors
         myVisionPortal = new VisionPortal.Builder()
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .addProcessors(pipelineProcessor, aprilTag, cameraStreamProcessor)
                 .build();
-
+        // Here we use said processor to display the preview on FTC Dashboard
         FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
 
-
-
-
-
+        // Init our custom version of MecanumDrive that corrects with apriltags
         AprilTagDrive drive = new AprilTagDrive(hardwareMap, startPose(), aprilTag);
-        //MecanumDrive drive = new MecanumDrive(hardwareMap, startPose()); // TODO: THIS WILL BREAK THINGS
+        //MecanumDrive drive = new MecanumDrive(hardwareMap, startPose());
 
+        // Initalize the trajectories based on the implementations of the abstract classes
+        // Also we init here assuming it'll take a bit, though it seems fast in 1.0
         Action trajLeft = trajLeft(drive, motorActions);
         Action trajCenter = trajCenter(drive, motorActions);
         Action trajRight = trajRight(drive, motorActions);
 
-
-        motorControl.claw.setPosition(0.7);
 
         /*
          * The INIT-loop:
@@ -139,6 +153,9 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
             telemetry.addData("Realtime analysis", pipeline.getAnalysis()); // Commented out: pipeline has it's own telemetry
             telemetry.update();
              */
+
+            // This stuff is for a telemetry selection thing I never ended up using
+            // It doesn't matter
             if (!ready.get()) {
                 telemetry.addAction(() -> {
                     parkClose = !parkClose;
@@ -170,7 +187,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
             }
 
 
-            // Don't burn CPU cycles busy-looping in this sample
+            // Don't burn CPU cycles busy-looping
             sleep(10);
         }
 
@@ -187,11 +204,13 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         telemetry.addData("Snapshot post-START analysis", snapshotAnalysis);
         telemetry.update();
 
+        // Reset slide to fix issue as mentioned earlier
         motorControl.slide.motor.setMode(STOP_AND_RESET_ENCODER);
         motorControl.slide.motor.setMode(RUN_TO_POSITION);
         motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
 
-
+        // Here we use the selection from the vision to select the right trajectory
+        // Then we use RaceParallelCommand to run both the trajectory and our motor updating until the trajectory ends
         switch (snapshotAnalysis)
         {
             case LEFT:
@@ -222,7 +241,8 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
                 break;
             }
         }
-
+        // Here we save the pose and team to static variables so we can use them in teleop
+        // Having the correct field centric based on our end point in auto is super useful
         PoseStorage.currentPose = drive.pose;
         PoseStorage.currentTeam = team();
     }

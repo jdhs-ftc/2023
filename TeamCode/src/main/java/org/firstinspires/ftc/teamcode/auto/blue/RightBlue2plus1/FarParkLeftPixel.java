@@ -6,9 +6,9 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.PoseStorage;
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
 @Autonomous(preselectTeleOp = "Teleop Field Centric", name = "2+1 Right Blue, Far Park, Left Pixel", group = "Blue")
@@ -34,7 +34,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajRight(AprilTagDrive drive, MotorActions motorActions) {
+    public Action trajLeft(AprilTagDrive drive, MotorActions motorActions) {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
@@ -47,7 +47,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .setReversed(true)
                 .splineToSplineHeading(new Pose2d(-62,23.5,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
+                //.stopAndAdd(motorActions.claw.grab())
                 .waitSeconds(0.5)
 
 
@@ -74,7 +74,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
-                .splineToConstantHeading(new Vector2d(-36,19), Math.toRadians(-90))
+                .splineToConstantHeading(new Vector2d(-36,18), Math.toRadians(-90))
                 .endTrajectory()
                 .stopAndAdd(motorActions.claw.release())
 
@@ -82,7 +82,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .setReversed(true)
                 .splineToSplineHeading(new Pose2d(-62,11.5,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
+                //.stopAndAdd(motorActions.claw.grab())
                 .waitSeconds(0.5)
 
 
@@ -103,7 +103,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
     }
 
     @Override
-    public Action trajLeft(AprilTagDrive drive, MotorActions motorActions) {
+    public Action trajRight(AprilTagDrive drive, MotorActions motorActions) {
 
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
@@ -117,7 +117,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineToConstantHeading(new Vector2d(-48, 14), Math.toRadians(180))
                 .splineToSplineHeading(new Pose2d(-62,14,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
+                //.stopAndAdd(motorActions.claw.grab())
                 .waitSeconds(0.5)
 
 

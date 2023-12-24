@@ -15,9 +15,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
+import org.firstinspires.ftc.teamcode.helpers.control.PIDFController;
+import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
-import org.firstinspires.ftc.teamcode.motor.PIDFController;
-import org.firstinspires.ftc.teamcode.vision.CameraStreamProcessor;
 import org.firstinspires.ftc.teamcode.vision.pipelines.WhitePixelProcessor;
 import org.firstinspires.ftc.vision.VisionPortal;
 
@@ -75,6 +76,8 @@ public class TeleopFieldCentric extends LinearOpMode {
         // Enable Performance Optimization
 
         //PhotonCore.start(hardwareMap); // TODO: if somethings' wrong THIS IS WHY
+
+        // Enable Bulk Caching
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
 
         for (LynxModule module : allHubs) {
@@ -115,9 +118,12 @@ public class TeleopFieldCentric extends LinearOpMode {
         // Run Period
 
         while (opModeIsActive() && !isStopRequested()) {
+            // Reset measured loop time
             loopTime.reset();
+            // Reset bulk cache
             allHubs.forEach(LynxModule::clearBulkCache);
 
+            // This lets us do reliable rising edge detection, even if it changes mid loop
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
 
@@ -179,15 +185,17 @@ public class TeleopFieldCentric extends LinearOpMode {
             } else {
                 speed = .8;
             }
-
+            // especially in driver practice, imu drifts eventually
+            // this lets them reset just in case
             if (padResetPose) {
-                if (!(PoseStorage.currentTeam == PoseStorage.Team.BLUE)) {
+                if (!(PoseStorage.currentTeam == PoseStorage.Team.BLUE)) { // Team is declared and saved there for auto
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(90.0));
                 } else {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(-90.0));
                 }
-                gamepad1.rumbleBlips(1);
+                gamepad1.rumbleBlips(1); // tell the driver it succeeded
             }
+            // Second layer
             if (pad1ExtraSettings) {
                 if (pad1ExToggleFieldCentric) {
                     fieldCentric = !fieldCentric;
@@ -207,6 +215,8 @@ public class TeleopFieldCentric extends LinearOpMode {
                 }
             }
 
+            // Field Centric
+
             // Create a vector from the gamepad x/y inputs
             // Then, rotate that vector by the inverse of that heading
             Vector2d input = new Vector2d(
@@ -217,7 +227,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             //Pose2d poseEstimate = drive.pose;
             double rotationAmount = -drive.pose.heading.log(); // Rotation2d.log() makes it into a double in radians.
             if (fieldCentric && !padCameraAutoAim) {
-                if (PoseStorage.currentTeam == PoseStorage.Team.BLUE) {
+                if (PoseStorage.currentTeam == PoseStorage.Team.BLUE) { // Depending on which side we're on the color changes
                     //input = drive.pose.heading.inverse().plus(Math.toRadians(90)).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
                     rotationAmount = rotationAmount - Math.toRadians(90);
                 } else {
@@ -225,17 +235,24 @@ public class TeleopFieldCentric extends LinearOpMode {
                     rotationAmount = rotationAmount + Math.toRadians(90);
 
                 }
+                // Rotate the vector
+                // THIS IS NOT THE GOOD WAY TO DO THIS
+                // MULTIPLYING ROTATION2Ds by VECTORS ROTATES THEM ELEGANTLY
+                // THIS TECHNICALLY WORKS THOUGH
                 input = new Vector2d(input.x * Math.cos(rotationAmount) - input.y * Math.sin(rotationAmount), input.x * Math.sin(rotationAmount) + input.y * Math.cos(rotationAmount));
                 //input = drive.pose.heading.inverse().plus(Math.toRadians(90)).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
             }
             Vector2d controllerHeading = new Vector2d(-gamepad1.right_stick_y, -gamepad1.right_stick_x);
+
+            // gunner can take control temporarily if needed
             if (padFullCycle) {
                 input = input.plus(new Vector2d(
                         0,
                         -padGunnerDrive * 0.5
                 ));
             }
-
+            // check if the right stick is pushed to the edge
+            // this if statement is backwards; if true, it's not pushed drive normal
             if (Math.sqrt(Math.pow(controllerHeading.x, 2.0) + Math.pow(controllerHeading.y, 2.0)) < 0.4) {
                 drive.setDrivePowers(
                         new PoseVelocity2d(
@@ -246,9 +263,10 @@ public class TeleopFieldCentric extends LinearOpMode {
                                 (gamepad1.left_trigger - gamepad1.right_trigger) * speed
                         )
                 );
-            } else {
+            } else { // right stick is pushed
                 // Set the target heading for the heading controller to our desired angle
 
+                // Cast the angle based on the angleCast of the joystick as a heading
                 if (PoseStorage.currentTeam == PoseStorage.Team.BLUE) {
                     joystickHeadingController.targetPosition = controllerHeading.angleCast().log() + Math.toRadians(-90);
                 } else {
@@ -272,6 +290,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                 );
 
             }
+            // auto aim stuff; not really tested
             if (padCameraAutoAim && whitePixelProcessor.getDetectedPixel() != null) {
                 double x = whitePixelProcessor.getDetectedPixel().x;
                 double y = whitePixelProcessor.getDetectedPixel().y;
@@ -284,17 +303,16 @@ public class TeleopFieldCentric extends LinearOpMode {
                         new PoseVelocity2d(
                                 new Vector2d(
                                         input.x,
-                                        input.y
+                                        headingInput
                                 ),
-                                headingInput
+                                (gamepad1.left_trigger - gamepad1.right_trigger) * speed
                         )
                 );
             }
 
 
 
-            // LIFT
-
+            // LIFT CONTROL/FSM
 
 
             // Slide (Manual)
@@ -315,6 +333,8 @@ public class TeleopFieldCentric extends LinearOpMode {
                 motorControl.clawArm.setTargetPosition(0.1);
 
             } else { motorControl.clawArm.setTargetPosition(motorControl.clawArm.getTargetPosition() + (padArmControl * padArmControlMultiplier));}
+
+            // THE FULL STATE MACHINE
 
             switch (liftState) {
                 case IDLE:
@@ -401,6 +421,7 @@ public class TeleopFieldCentric extends LinearOpMode {
 
 
             // Reset
+
             if (padForceDown) {
                 liftState = LiftState.IDLE;
                 motorControl.clawArm.setTargetPosition(0);
@@ -409,6 +430,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
 
             // Shooter
+
             if (padShooter) {
                 motorControl.shooter.setPower(-1);
             } else {
@@ -433,6 +455,8 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
 
              */
+
+            // rumble the gunner controller based on the claw color sensor
             if (colorAlpha > 200 && !pixelInClaw) {
                 pad2rumble = Math.log10(colorAlpha) / 6;
             } else {
@@ -440,8 +464,11 @@ public class TeleopFieldCentric extends LinearOpMode {
             }
             gamepad2.rumble(pad2rumble, pad2rumble, Gamepad.RUMBLE_DURATION_CONTINUOUS);
 
+            // update RR, update motor controllers
             drive.updatePoseEstimate();
             motorControl.update();
+
+            // TELEMETRY
 
             TelemetryPacket packet = new TelemetryPacket();
             MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)

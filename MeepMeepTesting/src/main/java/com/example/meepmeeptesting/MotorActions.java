@@ -4,6 +4,10 @@ package com.example.meepmeeptesting;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 
+/**
+ * Dummy version of MotorActions for use with MeepMeep
+ * This doesn't actually do anything, but it's here so that you don't have to comment it out in your trajectories
+ */
 public class MotorActions {
     Claw claw;
     AutoPlacer autoPlacer;

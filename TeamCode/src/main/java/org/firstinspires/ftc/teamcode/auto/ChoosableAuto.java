@@ -5,6 +5,15 @@ import com.acmerobotics.roadrunner.Action;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
+/**
+ * I was experimenting here with using telemetry actions to select an auto without getting lost
+ * in the opmodes menu.
+ * However the telemetry actions thing is for updating telemetry as it's displayed not for making
+ * it interactable
+ * <p>
+ * <b>This doesn't do anything</b>,( might be useful later), the real auto code is AbstractVisionOpMode and the implementing classes
+ */
+@Deprecated
 public abstract class ChoosableAuto extends AbstractVisionOpMode {
     public abstract AbstractVisionOpMode parkClosePixelPlaceLeftAuto();
     public abstract AbstractVisionOpMode parkClosePixelPlaceRightAuto();
