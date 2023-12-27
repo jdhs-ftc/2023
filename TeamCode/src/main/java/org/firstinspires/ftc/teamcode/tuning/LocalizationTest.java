@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
+import android.util.Size;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -25,23 +27,56 @@ public class LocalizationTest extends LinearOpMode {
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             //MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
-            AprilTagProcessor aprilTag = new AprilTagProcessor.Builder()
+
+            /*
+            List<Integer> myPortalsList = JavaUtil.makeIntegerList(VisionPortal.makeMultiPortalView(2, VisionPortal.MultiPortalLayout.HORIZONTAL));
+            int Portal_1_View_ID = myPortalsList.get(0);
+            int Portal_2_View_ID = myPortalsList.get(1);
+
+             */
+
+            // !!!!DON'T COPY THIS CODE IT DOESN'T WORK!!!! ALSO DON'T DO THIS TO POOR INNOCENT LOCALIZATIONTEST
+            AprilTagProcessor aprilTag1 = new AprilTagProcessor.Builder()
                     .setLensIntrinsics(517.0085f, 508.91845f, 322.364324f, 167.9933806f)
+                    .build();
+
+            AprilTagProcessor aprilTag2 = new AprilTagProcessor.Builder()
+                    // TODO: CALIBRATE .setLensIntrinsics(...)
                     .build();
             CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
-            VisionPortal myVisionPortal = new VisionPortal.Builder()
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                    .addProcessors(aprilTag, cameraStreamProcessor)
+            VisionPortal cam2Portal = new VisionPortal.Builder()
+                    //.setLiveViewContainerId(Portal_2_View_ID)
+                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                    .setCameraResolution(new Size(640,480))
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"))
+                    .addProcessors(aprilTag2)
+                    .enableLiveView(true)
                     .build();
+
+            VisionPortal myVisionPortal = new VisionPortal.Builder()
+                    //.setLiveViewContainerId(Portal_1_View_ID)
+                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                    .setCameraResolution(new Size(640,480))
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .addProcessors(aprilTag1, cameraStreamProcessor)
+                    .enableLiveView(true)
+                    .build();
+
+
+
+
+
+
 
             FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
 
-            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(180)), aprilTag);
+            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(180)), aprilTag1, aprilTag2);
 
             waitForStart();
 
             while (opModeIsActive()) {
+
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
                                 -gamepad1.left_stick_y,
@@ -57,30 +92,24 @@ public class LocalizationTest extends LinearOpMode {
                 MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot
                 packet.fieldOverlay().fillCircle(drive.pose.position.x, drive.pose.position.y,1);
 
-
-
-
                 telemetry.addData("x", drive.pose.position.x);
                 telemetry.addData("y", drive.pose.position.y);
                 telemetry.addData("heading", drive.pose.heading);
                 telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
-                if (!aprilTag.getDetections().isEmpty()) {
-                    tag = aprilTag.getDetections().get(0);
-                        packet.fieldOverlay().fillCircle(tag.metadata.fieldPosition.get(0), aprilTag.getDetections().get(0).metadata.fieldPosition.get(1), 2);
-                        packet.fieldOverlay().setAlpha(0.5);
-                        packet.fieldOverlay().strokeLine(tag.metadata.fieldPosition.get(0), tag.metadata.fieldPosition.get(1),tag.metadata.fieldPosition.get(0),drive.pose.position.y);
-                        packet.fieldOverlay().strokeLine(tag.metadata.fieldPosition.get(0), drive.pose.position.y,drive.pose.position.x,drive.pose.position.y);
-                        packet.fieldOverlay().strokeLine(tag.metadata.fieldPosition.get(0), tag.metadata.fieldPosition.get(1),drive.pose.position.x,drive.pose.position.y);
-                        packet.fieldOverlay().setAlpha(1);
-                        telemetry.addData("tagFieldPosX", tag.metadata.fieldPosition.get(0));
-                        telemetry.addData("tagFieldPosY", tag.metadata.fieldPosition.get(1));
-                        telemetry.addData("tagHeading", Math.toDegrees(Helpers.quarternionToHeading(tag.metadata.fieldOrientation)));
-                        telemetry.addData("tagRelPosX", tag.ftcPose.x);
-                        telemetry.addData("tagRelPosY", tag.ftcPose.y);
-                        telemetry.addData("tagRelBearing", tag.ftcPose.bearing);
-
-
-
+                if (!drive.totalDetections.isEmpty()) {
+                    tag = drive.totalDetections.get(0);
+                    packet.fieldOverlay().fillCircle(tag.metadata.fieldPosition.get(0), drive.totalDetections.get(0).metadata.fieldPosition.get(1), 2);
+                    packet.fieldOverlay().setAlpha(0.5);
+                    packet.fieldOverlay().strokeLine(tag.metadata.fieldPosition.get(0), tag.metadata.fieldPosition.get(1),tag.metadata.fieldPosition.get(0),drive.pose.position.y);
+                    packet.fieldOverlay().strokeLine(tag.metadata.fieldPosition.get(0), drive.pose.position.y,drive.pose.position.x,drive.pose.position.y);
+                    packet.fieldOverlay().strokeLine(tag.metadata.fieldPosition.get(0), tag.metadata.fieldPosition.get(1),drive.pose.position.x,drive.pose.position.y);
+                    packet.fieldOverlay().setAlpha(1);
+                    telemetry.addData("tagFieldPosX", tag.metadata.fieldPosition.get(0));
+                    telemetry.addData("tagFieldPosY", tag.metadata.fieldPosition.get(1));
+                    telemetry.addData("tagHeading", Math.toDegrees(Helpers.quarternionToHeading(tag.metadata.fieldOrientation)));
+                    telemetry.addData("tagRelPosX", tag.ftcPose.x);
+                    telemetry.addData("tagRelPosY", tag.ftcPose.y);
+                    telemetry.addData("tagRelBearing", tag.ftcPose.bearing);
                 }
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
 

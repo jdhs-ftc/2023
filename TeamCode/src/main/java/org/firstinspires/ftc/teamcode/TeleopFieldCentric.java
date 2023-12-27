@@ -33,7 +33,7 @@ public class TeleopFieldCentric extends LinearOpMode {
     // Declare a PIDF Controller to regulate heading
     private final PIDFController.PIDCoefficients HEADING_PID_JOYSTICK = new PIDFController.PIDCoefficients(0.2, 0.0, 1);
     private final PIDFController joystickHeadingController = new PIDFController(HEADING_PID_JOYSTICK);
-    private final PIDFController.PIDCoefficients PIXEL_PID_JOYSTICK = new PIDFController.PIDCoefficients(0.002, 0.0, 0.0);
+    private final PIDFController.PIDCoefficients PIXEL_PID_JOYSTICK = new PIDFController.PIDCoefficients(0.004, 0.0, 0.0);
     private final PIDFController pixelHeadingController = new PIDFController(PIXEL_PID_JOYSTICK);
     double speed;
     LynxModule CONTROL_HUB;
@@ -102,7 +102,7 @@ public class TeleopFieldCentric extends LinearOpMode {
 
         // Vision Init
         new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"))
                 .addProcessors(whitePixelProcessor, cameraStreamProcessor)
                 .build();
 
@@ -294,7 +294,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             if (padCameraAutoAim && whitePixelProcessor.getDetectedPixel() != null) {
                 double x = whitePixelProcessor.getDetectedPixel().x;
                 double y = whitePixelProcessor.getDetectedPixel().y;
-                pixelHeadingController.targetPosition =  360; // pixel aligned with claw
+                pixelHeadingController.targetPosition =  200; // pixel aligned with claw
 
                 // Set desired angular velocity to the heading controller output + angular
                 // velocity feedforward

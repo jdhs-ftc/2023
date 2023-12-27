@@ -143,7 +143,7 @@ public class MotorControl {
             targetPosition = 0;
             motor = hardwareMap.get(DcMotorEx.class, "arm");
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            motor.setCurrentAlert(4.4, CurrentUnit.AMPS);
+            motor.setCurrentAlert(4.0, CurrentUnit.AMPS);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             controller.setOutputBounds(-0.3, 0.5);

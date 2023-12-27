@@ -28,11 +28,16 @@ import android.graphics.Canvas;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
 import org.firstinspires.ftc.vision.VisionProcessor;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
+import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -58,7 +63,7 @@ public class WhitePixelProcessor implements VisionProcessor {
      * min and max values here for now, meaning
      * that all pixels will be shown.
      */
-    public Scalar lower = new Scalar(0, 0, 159);
+    public Scalar lower = new Scalar(0, 0, 210);
     public Scalar upper = new Scalar(120, 74, 255);
     public final double canny1 = 100;
     public final double canny2 = 500;
@@ -197,7 +202,7 @@ public class WhitePixelProcessor implements VisionProcessor {
                 if (boundRect[i].width > detectedPixelCandidate.width) {
                     detectedPixelCandidate = boundRect[i];
                     Imgproc.rectangle(maskedInputMat, boundRect[i], new Scalar(0, 255, 0));
-                    //Imgproc.putText(maskedInputMat, Integer.toString(boundRect[i].x), new Point(boundRect[i].x,boundRect[i].y), 0, 1, new Scalar(255, 255, 255));
+                    Imgproc.putText(maskedInputMat, Integer.toString(boundRect[i].x), new Point(boundRect[i].x,boundRect[i].y), 0, 1, new Scalar(255, 255, 255));
                 } else {
                     //Imgproc.rectangle(maskedInputMat, boundRect[i], new Scalar(255, 0, 0));
                     //Imgproc.putText(maskedInputMat, Double.toString(Math.round(100.0 * (double) boundRect[i].height / (double) boundRect[i].width) / 100.0), new Point(boundRect[i].x,boundRect[i].y), 0, 1, new Scalar(0, 76.9, 89.8));
@@ -210,6 +215,10 @@ public class WhitePixelProcessor implements VisionProcessor {
         } else {
             detectedPixel = null;
         }
+
+
+
+
         /*
         /**
          * Add some nice and informative telemetry messages
@@ -239,5 +248,47 @@ public class WhitePixelProcessor implements VisionProcessor {
 
     public Rect getDetectedPixel() {
         return detectedPixel;
+    }
+
+    Pose poseFromTrapezoid(Point[] points, Mat cameraMatrix, double sizeX , double sizeY)
+    {
+        // The actual 2d points of the tag detected in the image
+        MatOfPoint2f points2d = new MatOfPoint2f(points);
+
+        // The 3d points of the tag in an 'ideal projection'
+        Point3[] arrayPoints3d = new Point3[4];
+        arrayPoints3d[0] = new Point3(-sizeX/2, sizeY/2, 0);
+        arrayPoints3d[1] = new Point3(sizeX/2, sizeY/2, 0);
+        arrayPoints3d[2] = new Point3(sizeX/2, -sizeY/2, 0);
+        arrayPoints3d[3] = new Point3(-sizeX/2, -sizeY/2, 0);
+        MatOfPoint3f points3d = new MatOfPoint3f(arrayPoints3d);
+
+        // Using this information, actually solve for pose
+        Pose pose = new Pose();
+        Calib3d.solvePnP(points3d, points2d, cameraMatrix, new MatOfDouble(), pose.rvec, pose.tvec, false);
+
+        return pose;
+    }
+
+    /*
+     * A simple container to hold both rotation and translation
+     * vectors, which together form a 6DOF pose.
+     */
+    class Pose
+    {
+        Mat rvec;
+        Mat tvec;
+
+        public Pose()
+        {
+            rvec = new Mat(3, 1, CvType.CV_32F);
+            tvec = new Mat(3, 1, CvType.CV_32F);
+        }
+
+        public Pose(Mat rvec, Mat tvec)
+        {
+            this.rvec = rvec;
+            this.tvec = tvec;
+        }
     }
 }
