@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.auto.VisionHelper;
 import org.firstinspires.ftc.teamcode.helpers.Helpers;
 import org.firstinspires.ftc.teamcode.helpers.control.KalmanFilter;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
@@ -51,8 +52,8 @@ public class AprilTagDrive extends MecanumDrive {
 
     Vector2d cameraOffset;
     static final Params PARAMS = new Params();
-    final AprilTagProcessor aprilTag;
-    AprilTagProcessor aprilTag2 = null;
+    final AprilTagProcessor aprilTagBack;
+    AprilTagProcessor aprilTagFront = null;
     public List<AprilTagDetection> totalDetections;
     public AprilTagDetection lastDetection;
     final KalmanFilter.Vector2dKalmanFilter posFilter;
@@ -60,18 +61,24 @@ public class AprilTagDrive extends MecanumDrive {
     Pose2d localizerPose;
     Vector2d filteredVector;
     boolean shouldTagCorrect = false;
-    public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTag) {
+    public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTagBack) {
         super(hardwareMap, pose);
-        this.aprilTag = aprilTag;
+        this.aprilTagBack = aprilTagBack;
         this.posFilter = new KalmanFilter.Vector2dKalmanFilter(PARAMS.kalmanFilterQ, PARAMS.kalmanFilterR);
         this.cameraOffset = Params.camera1Offset;
 
     }
 
-    public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTag, AprilTagProcessor aprilTag2) {
+    public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTagBack, AprilTagProcessor aprilTagFront) {
         super(hardwareMap, pose);
-        this.aprilTag = aprilTag;
-        this.aprilTag2 = aprilTag2;
+        this.aprilTagBack = aprilTagBack;
+        this.aprilTagFront = aprilTagFront;
+        this.posFilter = new KalmanFilter.Vector2dKalmanFilter(PARAMS.kalmanFilterQ, PARAMS.kalmanFilterR);
+    }
+    public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, VisionHelper vHelper) {
+        super(hardwareMap, pose);
+        this.aprilTagBack = vHelper.aprilTagBack;
+        this.aprilTagFront = vHelper.aprilTagFront;
         this.posFilter = new KalmanFilter.Vector2dKalmanFilter(PARAMS.kalmanFilterQ, PARAMS.kalmanFilterR);
     }
     @Override
@@ -120,10 +127,10 @@ public class AprilTagDrive extends MecanumDrive {
         return twist.velocity().value(); // trust the existing localizer for speeds; because I don't know how to do it with apriltags
     }
     public Vector2d getVectorBasedOnTags() {
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        List<AprilTagDetection> currentDetections = aprilTagBack.getDetections();
         List<AprilTagDetection> cam2Detections = new ArrayList<>();
-        if (aprilTag2 != null) {
-            cam2Detections = aprilTag2.getDetections();
+        if (aprilTagFront != null) {
+            cam2Detections = aprilTagFront.getDetections();
         }
         totalDetections = new ArrayList<>();
         totalDetections.addAll(currentDetections);

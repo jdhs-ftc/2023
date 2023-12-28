@@ -105,6 +105,11 @@ public class TeamPropDeterminationPipeline extends OpenCvPipeline
 
     public TeamPropDeterminationPipeline(Telemetry telemetry) {
         this.telemetry = telemetry;
+        this.useTelemetry = true;
+    }
+    public TeamPropDeterminationPipeline() {
+        this.telemetry = null;
+        this.useTelemetry = false;
     }
 
     public void setBlue(Boolean newIsBlue) {
@@ -295,7 +300,7 @@ public class TeamPropDeterminationPipeline extends OpenCvPipeline
                     GREEN, // The color the rectangle is drawn in
                     -1); // Negative thickness means solid fill
         }
-        if (useTelemetry) {
+        if (useTelemetry && telemetry != null) {
             telemetry.addData("position", position);
             telemetry.addData("avg1", avg1);
             telemetry.addData("avg2", avg2);

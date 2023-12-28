@@ -9,6 +9,8 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TankDrive;
@@ -28,50 +30,46 @@ public class LocalizationTest extends LinearOpMode {
             //MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
 
-            /*
-            List<Integer> myPortalsList = JavaUtil.makeIntegerList(VisionPortal.makeMultiPortalView(2, VisionPortal.MultiPortalLayout.HORIZONTAL));
-            int Portal_1_View_ID = myPortalsList.get(0);
-            int Portal_2_View_ID = myPortalsList.get(1);
 
-             */
 
-            // !!!!DON'T COPY THIS CODE IT DOESN'T WORK!!!! ALSO DON'T DO THIS TO POOR INNOCENT LOCALIZATIONTEST
-            AprilTagProcessor aprilTag1 = new AprilTagProcessor.Builder()
+
+            AprilTagProcessor aprilTagBack = new AprilTagProcessor.Builder()
                     .setLensIntrinsics(517.0085f, 508.91845f, 322.364324f, 167.9933806f)
                     .build();
 
-            AprilTagProcessor aprilTag2 = new AprilTagProcessor.Builder()
+            AprilTagProcessor aprilTagFront = new AprilTagProcessor.Builder()
                     // TODO: CALIBRATE .setLensIntrinsics(...)
                     .build();
             CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
-            VisionPortal cam2Portal = new VisionPortal.Builder()
-                    //.setLiveViewContainerId(Portal_2_View_ID)
-                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                    .setCameraResolution(new Size(640,480))
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"))
-                    .addProcessors(aprilTag2)
-                    .enableLiveView(true)
-                    .build();
+            WebcamName backCam = hardwareMap.get(WebcamName.class, "Webcam 1");
+            WebcamName frontCam = hardwareMap.get(WebcamName.class, "Webcam 2");
+            CameraName switchableCamera = ClassFactory.getInstance()
+                    .getCameraManager().nameForSwitchableCamera(backCam, frontCam);
 
             VisionPortal myVisionPortal = new VisionPortal.Builder()
-                    //.setLiveViewContainerId(Portal_1_View_ID)
                     .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                    .setCameraResolution(new Size(640,480))
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                    .addProcessors(aprilTag1, cameraStreamProcessor)
+                    .setCameraResolution(new Size(320,240))
+                    .setCamera(switchableCamera)
+                    .addProcessors(aprilTagBack, aprilTagFront, cameraStreamProcessor)
                     .enableLiveView(true)
                     .build();
-
-
-
-
-
 
 
             FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
 
-            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(180)), aprilTag1, aprilTag2);
+            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(180)), aprilTagBack, aprilTagFront);
+
+            while (!isStopRequested() && myVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)
+            {
+                telemetry.addLine("Initializing camera...");
+                telemetry.update();
+            }
+            telemetry.addLine("Camera initialized");
+            telemetry.update();
+            myVisionPortal.setActiveCamera(backCam);
+            myVisionPortal.setProcessorEnabled(aprilTagBack, true);
+            myVisionPortal.setProcessorEnabled(aprilTagFront, false);
 
             waitForStart();
 
