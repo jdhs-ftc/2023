@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -181,7 +182,7 @@ public class TeleopFieldCentric extends LinearOpMode {
             if (padSlowMode) {
                 speed = .35;
             } else if (padFastMode) {
-                speed = 1;
+                speed = 1.5;
             } else {
                 speed = .8;
             }
@@ -235,12 +236,7 @@ public class TeleopFieldCentric extends LinearOpMode {
                     rotationAmount = rotationAmount + Math.toRadians(90);
 
                 }
-                // Rotate the vector
-                // THIS IS NOT THE GOOD WAY TO DO THIS
-                // MULTIPLYING ROTATION2Ds by VECTORS ROTATES THEM ELEGANTLY
-                // THIS TECHNICALLY WORKS THOUGH
-                input = new Vector2d(input.x * Math.cos(rotationAmount) - input.y * Math.sin(rotationAmount), input.x * Math.sin(rotationAmount) + input.y * Math.cos(rotationAmount));
-                //input = drive.pose.heading.inverse().plus(Math.toRadians(90)).times(new Vector2d(-input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
+                input = Rotation2d.fromDouble(rotationAmount).times(new Vector2d(input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
             }
             Vector2d controllerHeading = new Vector2d(-gamepad1.right_stick_y, -gamepad1.right_stick_x);
 

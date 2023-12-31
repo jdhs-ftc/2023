@@ -39,8 +39,8 @@ public class AprilTagDrive extends MecanumDrive {
                 -6,
                 4);
         static Vector2d camera2Offset = new Vector2d(
-                6,
-                0);
+                0,
+                -5);//6);
         static double cameraYawOffset = Math.toRadians(180); // TODO: tune
         /*
          * Q model covariance (trust in model), default 0.1
@@ -61,6 +61,9 @@ public class AprilTagDrive extends MecanumDrive {
     Pose2d localizerPose;
     Vector2d filteredVector;
     boolean shouldTagCorrect = false;
+    VisionHelper vHelper = null;
+    boolean frontCamActive = true;
+    boolean backCamActive = true;
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTagBack) {
         super(hardwareMap, pose);
         this.aprilTagBack = aprilTagBack;
@@ -80,6 +83,7 @@ public class AprilTagDrive extends MecanumDrive {
         this.aprilTagBack = vHelper.aprilTagBack;
         this.aprilTagFront = vHelper.aprilTagFront;
         this.posFilter = new KalmanFilter.Vector2dKalmanFilter(PARAMS.kalmanFilterQ, PARAMS.kalmanFilterR);
+        this.vHelper = vHelper;
     }
     @Override
     public PoseVelocity2d updatePoseEstimate() {
@@ -127,9 +131,19 @@ public class AprilTagDrive extends MecanumDrive {
         return twist.velocity().value(); // trust the existing localizer for speeds; because I don't know how to do it with apriltags
     }
     public Vector2d getVectorBasedOnTags() {
-        List<AprilTagDetection> currentDetections = aprilTagBack.getDetections();
+        if (vHelper.frontCamActive) {
+            frontCamActive = true;
+            backCamActive = false;
+        } else {
+            backCamActive = true;
+            frontCamActive = false;
+        }
+        List<AprilTagDetection> currentDetections = new ArrayList<>();
+        if (backCamActive) {
+            currentDetections = aprilTagBack.getDetections();
+        }
         List<AprilTagDetection> cam2Detections = new ArrayList<>();
-        if (aprilTagFront != null) {
+        if (aprilTagFront != null && frontCamActive) {
             cam2Detections = aprilTagFront.getDetections();
         }
         totalDetections = new ArrayList<>();
@@ -162,7 +176,7 @@ public class AprilTagDrive extends MecanumDrive {
         if (!cam2Detections.isEmpty()) {
             // Step through the list of detections and calculate the robot position from each one.
             for (AprilTagDetection detection : cam2Detections) {
-                if (detection.metadata != null  && !detection.metadata.name.contains("Small")) { // TODO: Change if we want to use wall tags?
+                if (detection.metadata != null) {  //&& !detection.metadata.name.contains("Small")) { // TODO: Change if we want to use wall tags?
                     Vector2d tagPos = Helpers.toVector2d(detection.metadata.fieldPosition); // SDK builtin tag position
                     double tagHeading = Helpers.quarternionToHeading(detection.metadata.fieldOrientation); // SDK builtin tag heading
 
@@ -221,15 +235,21 @@ public class AprilTagDrive extends MecanumDrive {
         // rotate RC coordinates to be field-centric
         double x2 = x*Math.cos(botheading)+y*Math.sin(botheading);
         double y2 = x*-Math.sin(botheading)+y*Math.cos(botheading);
-
+        double absX;
+        double absY;
         // add FC coordinates to apriltag position
         // tags is just the CS apriltag library
         VectorF tagpose = detection.metadata.fieldPosition;
         if (detection.metadata.id <= 6) {
-            return new Vector2d(tagpose.get(0) + y2, tagpose.get(1) - x2);
+            absX = tagpose.get(0) + y2;
+            absY = tagpose.get(1) - x2;
+
         } else {
-            return new Vector2d(tagpose.get(0) - y2, tagpose.get(1) - x2);
+            absX = tagpose.get(0) - y2;
+            absY = tagpose.get(1) + x2; // prev -
+
         }
+        return new Vector2d(absX, absY);
     }
 
 

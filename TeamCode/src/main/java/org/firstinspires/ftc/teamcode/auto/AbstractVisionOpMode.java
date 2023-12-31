@@ -24,24 +24,17 @@ package org.firstinspires.ftc.teamcode.auto;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
 import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.helpers.Helpers;
 import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
-import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
-import org.firstinspires.ftc.teamcode.helpers.vision.PipelineProcessor;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.vision.pipelines.TeamPropDeterminationPipeline;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 // TODO: USE APRILTAGS
@@ -81,12 +74,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
     public boolean initLoop() {
         return false;
     };
-    OpenCvWebcam webcam;
-    TeamPropDeterminationPipeline pipeline;
-    TeamPropDeterminationPipeline.PropPosition snapshotAnalysis = TeamPropDeterminationPipeline.PropPosition.LEFT; // default
-    AprilTagProcessor aprilTag;
-    PipelineProcessor pipelineProcessor;
-    VisionPortal myVisionPortal;
+    VisionHelper vision;
     public boolean parkClose = true;
     public boolean pixelPlaceLeft = true;
     public AtomicBoolean ready = new AtomicBoolean(!choosable());
@@ -106,34 +94,10 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         motorControl.slide.setTargetPosition(-100);
 
 
-        // Initialize prop detector
-        pipeline = new TeamPropDeterminationPipeline(telemetry);
-        // The auto that's implementing this will have set the team, so we tell the pipeline which color of prop to look for
-        // Honestly not sure why I have this converted to boolean
-        pipeline.setBlue(team() == PoseStorage.Team.BLUE);
-
-        // Convert that EOCV pipeline into a new processor using this helper class
-        pipelineProcessor = new PipelineProcessor(pipeline);
-
-
-        // Create new apriltag processor using our tuned constants (TUNING FOR OLD WACK CAMERA NOT LOGITECH)
-        aprilTag = new AprilTagProcessor.Builder()
-                .setLensIntrinsics(517.0085f, 508.91845f, 322.364324f, 167.9933806f)
-                .build();
-
-        // CameraStreamProcessor is a helper class that lets us see the camera stream on FTC Dashboard
-        CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
-
-        // Initialize with all 3 processors
-        myVisionPortal = new VisionPortal.Builder()
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .addProcessors(pipelineProcessor, aprilTag, cameraStreamProcessor)
-                .build();
-        // Here we use said processor to display the preview on FTC Dashboard
-        FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
+        VisionHelper vision = new VisionHelper(hardwareMap, team());
 
         // Init our custom version of MecanumDrive that corrects with apriltags
-        AprilTagDrive drive = new AprilTagDrive(hardwareMap, startPose(), aprilTag);
+        AprilTagDrive drive = new AprilTagDrive(hardwareMap, startPose(), vision);
         //MecanumDrive drive = new MecanumDrive(hardwareMap, startPose());
 
         // Initalize the trajectories based on the implementations of the abstract classes
@@ -186,9 +150,10 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
                 trajRight = trajRight(drive, motorActions);
             }
 
-
+            vision.initLoop(telemetry);
+            telemetry.update();
             // Don't burn CPU cycles busy-looping
-            sleep(10);
+            sleep(50);
         }
 
         /*
@@ -196,7 +161,8 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
          * for later use. We must do this because the analysis will continue
          * to change as the camera view changes once the robot starts moving!
          */
-        snapshotAnalysis = pipeline.getAnalysis();
+        TeamPropDeterminationPipeline.PropPosition snapshotAnalysis = vision.pipeline.getAnalysis();
+        vision.setPropDetection(false);
 
         /*
          * Show that snapshot on the telemetry
@@ -245,5 +211,12 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         // Having the correct field centric based on our end point in auto is super useful
         PoseStorage.currentPose = drive.pose;
         PoseStorage.currentTeam = team();
+    }
+
+    public Action switchBackCam() {
+        return vision.switchBackAction();
+    }
+    public Action switchFrontCam() {
+        return vision.switchFrontAction();
     }
 }

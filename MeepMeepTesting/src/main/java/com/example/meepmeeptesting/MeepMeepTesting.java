@@ -1,6 +1,6 @@
 package com.example.meepmeeptesting;
 
-import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
@@ -16,64 +16,20 @@ public class MeepMeepTesting {
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(40, 30, Math.toRadians(180), Math.toRadians(180), 15)
+                .setConstraints(50, 30, Math.toRadians(180), Math.toRadians(180), 15)
                 .setColorScheme(new ColorSchemeBlueDark())
                 .setDimensions(14,17.25)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-36, -62, Math.toRadians(-90)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-60, -36, Math.toRadians(180)))
                 .setReversed(true)
-                // GOTO GROUND PIXEL
-                .strafeTo(new Vector2d(-47,-48))
-                .splineToConstantHeading(new Vector2d(-47,-21), Math.toRadians(90))
-                .endTrajectory()
-                .stopAndAdd(motorActions.claw.release())
-
-                // GOTO STACK
-                .setReversed(true)
-                .splineToConstantHeading(new Vector2d(-48, -12), Math.toRadians(180))
-                .splineToSplineHeading(new Pose2d(-64,-12,Math.toRadians(180)), Math.toRadians(180))
-                .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
-                .waitSeconds(0.5)
-
-
-                // GOTO BACKBOARD
-                .setReversed(true)
-                .afterTime(0.5, motorActions.pixelToHook())
-                .splineToConstantHeading(new Vector2d(-36, -14), Math.toRadians(0))
-                .splineTo(new Vector2d(20, -14), Math.toRadians(0))
-                //.afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
-                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
-                .endTrajectory()
-                .waitSeconds(2)
-
-                // GOTO STACK
-                .setTangent(Math.toRadians(180))
+                //.afterTime(1,vision.switchFrontAction())
+                .splineTo(new Vector2d(48,-36), Math.toRadians(0))
                 .setReversed(false)
-                .splineTo(new Vector2d(20, -14), Math.toRadians(180))
-                .splineTo(new Vector2d(-36, -14), Math.toRadians(180))
-                .splineToSplineHeading(new Pose2d(-64,-12,Math.toRadians(180)), Math.toRadians(180))
-                .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
-                .waitSeconds(0.5)
+                .setTangent(Math.toRadians(180))
+                //.afterTime(1,vision.switchBackAction())
+                .splineTo(new Vector2d(-60,-36), Math.toRadians(180))
 
-
-                // GOTO BACKBOARD
-                .setReversed(true)
-                .afterTime(0.5, motorActions.pixelToHook())
-                .splineToConstantHeading(new Vector2d(-36, -14), Math.toRadians(0))
-                .splineTo(new Vector2d(20, -14), Math.toRadians(0))
-                //.afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
-                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
-                .endTrajectory()
-                .waitSeconds(2)
-
-
-                // PARK
-                .splineToLinearHeading(new Pose2d(54,-14, Math.toRadians(180)), Math.toRadians(0))
                 .build());
 
 
@@ -85,5 +41,12 @@ public class MeepMeepTesting {
                 .start();
 
 
+    }
+    // DUMMY ACTIONS
+    public Action switchBackCam() {
+        return telemetryPacket -> false;
+    }
+    public Action switchFrontCam() {
+        return telemetryPacket -> false;
     }
 }

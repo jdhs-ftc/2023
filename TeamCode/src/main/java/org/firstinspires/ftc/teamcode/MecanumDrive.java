@@ -81,9 +81,9 @@ public class MecanumDrive {
         public double kA = 0.00001; //0.00001; //increase by like 0.00001; to make the graphs line up
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 40;
+        public double maxWheelVel = 20; //50; // prev 40
         public double minProfileAccel = -30;
-        public double maxProfileAccel = 30;
+        public double maxProfileAccel = 30; //50;//30;
 
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
@@ -487,6 +487,20 @@ public class MecanumDrive {
     }
 
     // PATH MODS START HERE
+
+    public TrajectoryActionBuilder mirroredActionBuilder(Pose2d beginPose) {
+        return new TrajectoryActionBuilder(
+                TurnAction::new,
+                FollowTrajectoryAction::new, //FollowTrajectoryAsPathAction::new, TODO: REVERT THIS
+                beginPose, 1e-6, 0.0,
+                defaultTurnConstraints,
+                defaultVelConstraint, defaultAccelConstraint,
+                0.25, 0.1,
+                pose -> new Pose2dDual<>(
+                        pose.position.x, pose.position.y.unaryMinus(), pose.heading.inverse()));
+
+
+    }
 
     public final class FollowTrajectoryAsPathAction implements Action {
         public final DisplacementTrajectory dt;

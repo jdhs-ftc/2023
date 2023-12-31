@@ -123,24 +123,16 @@ public class MotorActions {
 
     public class Claw {
         public Action grab() {
-            return new Action() {
-                @Override
-                public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.claw.setPosition(0.8);
-                    return false;
-                }
-            };
+            return new SequentialAction(t -> {motorControl.claw.setPosition(0.8);return false;},
+                    new SleepAction(0.4));
         }
 
         // release
         public Action release() {
-            return new Action() {
-                @Override
-                public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.claw.setPosition(0.95);
-                    return false;
-                }
-            };
+            return new SequentialAction(t -> {
+                motorControl.claw.setPosition(0.95);
+                return false;
+            }, new SleepAction(0.4));
         }
     }
     public class Hook {

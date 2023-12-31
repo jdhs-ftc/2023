@@ -3,10 +3,12 @@ package org.firstinspires.ftc.teamcode.auto;
 import android.util.Size;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
@@ -24,7 +26,8 @@ public class VisionHelper {
     WebcamName backCam;
     WebcamName frontCam;
     VisionPortal myVisionPortal;
-    VisionHelper(HardwareMap hardwareMap, PoseStorage.Team team) {
+    public boolean frontCamActive = false;
+    public VisionHelper(HardwareMap hardwareMap, PoseStorage.Team team) {
 
         // Initialize prop detector
         pipeline = new TeamPropDeterminationPipeline();
@@ -41,6 +44,7 @@ public class VisionHelper {
 
         aprilTagFront = new AprilTagProcessor.Builder()
                 // TODO: CALIBRATE .setLensIntrinsics(...)
+                .setLensIntrinsics(721.5303734, 717.4905364, 310.2800085, 235.908762)
                 .build();
         CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
@@ -50,7 +54,7 @@ public class VisionHelper {
 
         myVisionPortal = new VisionPortal.Builder()
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                .setCameraResolution(new Size(320,240))
+                .setCameraResolution(new Size(640,480))
                 .setCamera(ClassFactory.getInstance()
                         .getCameraManager().nameForSwitchableCamera(backCam, frontCam))
                 .addProcessors(aprilTagBack, aprilTagFront, pipelineProcessor, cameraStreamProcessor)
@@ -61,13 +65,16 @@ public class VisionHelper {
         FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
     }
 
-    public void initLoop(TelemetryPacket telemetry) {
+    public boolean initLoop(Telemetry telemetry) {
         if (myVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
             telemetry.addLine("Vision loading...");
-            return;
+            return true;
         } else {
             switchBack();
             myVisionPortal.setProcessorEnabled(pipelineProcessor, true);
+            telemetry.addData("position", pipeline.getAnalysis());
+            telemetry.addData("confidence", pipeline.getConfidence());
+            return false;
         }
 
     }
@@ -75,14 +82,24 @@ public class VisionHelper {
         myVisionPortal.setActiveCamera(backCam);
         myVisionPortal.setProcessorEnabled(aprilTagBack, true);
         myVisionPortal.setProcessorEnabled(aprilTagFront, false);
+        frontCamActive = false;
     }
     public void switchFront() {
         myVisionPortal.setActiveCamera(frontCam);
         myVisionPortal.setProcessorEnabled(aprilTagBack, false);
         myVisionPortal.setProcessorEnabled(aprilTagFront, true);
+        frontCamActive = true;
     }
     public void setPropDetection(boolean enabled) {
         myVisionPortal.setProcessorEnabled(pipelineProcessor, enabled);
+    }
+
+    public Action switchBackAction() {
+        return new InstantAction(this::switchBack);
+
+    }
+    public Action switchFrontAction() {
+        return new InstantAction(this::switchFront);
     }
 
 }

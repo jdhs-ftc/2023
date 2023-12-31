@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
-import android.util.Size;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -9,17 +7,13 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TankDrive;
+import org.firstinspires.ftc.teamcode.auto.VisionHelper;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.helpers.Helpers;
-import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
-import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 public class LocalizationTest extends LinearOpMode {
     private AprilTagDetection tag;
@@ -28,50 +22,17 @@ public class LocalizationTest extends LinearOpMode {
     public void runOpMode() {
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             //MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+            VisionHelper vision = new VisionHelper(hardwareMap, PoseStorage.Team.BLUE);
 
+            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(180)), vision);
 
-
-
-
-            AprilTagProcessor aprilTagBack = new AprilTagProcessor.Builder()
-                    .setLensIntrinsics(517.0085f, 508.91845f, 322.364324f, 167.9933806f)
-                    .build();
-
-            AprilTagProcessor aprilTagFront = new AprilTagProcessor.Builder()
-                    // TODO: CALIBRATE .setLensIntrinsics(...)
-                    .build();
-            CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
-
-            WebcamName backCam = hardwareMap.get(WebcamName.class, "Webcam 1");
-            WebcamName frontCam = hardwareMap.get(WebcamName.class, "Webcam 2");
-            CameraName switchableCamera = ClassFactory.getInstance()
-                    .getCameraManager().nameForSwitchableCamera(backCam, frontCam);
-
-            VisionPortal myVisionPortal = new VisionPortal.Builder()
-                    .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
-                    .setCameraResolution(new Size(320,240))
-                    .setCamera(switchableCamera)
-                    .addProcessors(aprilTagBack, aprilTagFront, cameraStreamProcessor)
-                    .enableLiveView(true)
-                    .build();
-
-
-            FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
-
-            AprilTagDrive drive = new AprilTagDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(180)), aprilTagBack, aprilTagFront);
-
-            while (!isStopRequested() && myVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)
-            {
-                telemetry.addLine("Initializing camera...");
-                telemetry.update();
+            while (opModeIsActive() && opModeInInit() && !isStopRequested() && vision.initLoop(telemetry)) {
+                sleep(50);
             }
-            telemetry.addLine("Camera initialized");
-            telemetry.update();
-            myVisionPortal.setActiveCamera(backCam);
-            myVisionPortal.setProcessorEnabled(aprilTagBack, true);
-            myVisionPortal.setProcessorEnabled(aprilTagFront, false);
 
             waitForStart();
+
+            vision.setPropDetection(false);
 
             while (opModeIsActive()) {
 
@@ -82,6 +43,12 @@ public class LocalizationTest extends LinearOpMode {
                         ),
                         -gamepad1.right_stick_x
                 ));
+
+                if (gamepad1.right_bumper) {
+                    vision.switchBack();
+                } else if (gamepad1.left_bumper) {
+                    vision.switchFront();
+                }
 
                 drive.correctWithTag();
                 drive.updatePoseEstimate();

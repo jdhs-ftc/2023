@@ -3,6 +3,7 @@ package com.example.meepmeeptesting;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.SleepAction;
 
 /**
  * Dummy version of MotorActions for use with MeepMeep
@@ -19,58 +20,28 @@ public class MotorActions {
 
 
 
-    public Action pixelToHook() {
-        return new Action() {
-            @Override
-            public boolean run(TelemetryPacket t) {
-
-                return false;
-            }
-        };
+    public SleepAction pixelToHook() {
+        return new SleepAction(1.75);
     }
 
-    public Action placePixel() {
-        return new Action() {
-            @Override
-            public boolean run(TelemetryPacket t) {
-
-                return false;
-            }
-        };
+    public SleepAction placePixel() {
+        return new SleepAction(1);
     }
 
-    public Action autoPlace() {
-        return new Action() {
-            @Override
-            public boolean run(TelemetryPacket t) {
-
-                return false;
-            }
-        };
+    public SleepAction autoPlace() {
+        return new SleepAction(0.5);
     }
 
 
 
     public class Claw {
-        public Action grab() {
-            return new Action() {
-                @Override
-                public boolean run(TelemetryPacket t) {
-
-                    return false;
-                }
-            };
+        public SleepAction grab() {
+            return new SleepAction(0.4);
         }
 
         // release
-        public Action release() {
-            return new Action() {
-                @Override
-                public boolean run(TelemetryPacket t) {
-
-                    return false;
-                }
-            };
+        public SleepAction release() {
+            return new SleepAction(0.4);
         }
     }
 
