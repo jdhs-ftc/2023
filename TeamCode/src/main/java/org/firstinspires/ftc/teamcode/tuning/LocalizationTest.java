@@ -54,7 +54,7 @@ public class LocalizationTest extends LinearOpMode {
                 drive.updatePoseEstimate();
 
                 TelemetryPacket packet = new TelemetryPacket();
-                MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot
+                MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose);
                 packet.fieldOverlay().fillCircle(drive.pose.position.x, drive.pose.position.y,1);
 
                 telemetry.addData("x", drive.pose.position.x);

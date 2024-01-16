@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
+import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.ActionOpMode;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.motor.MotorControl;
 /**
  * Used to test autonomous quickly when I don't want spike mark select, especially apriltag testing
  */
+@Photon
 @Autonomous(name = "TestAutoOpMode", group = "Test")
 @Config
 public class TestAutoOpMode extends ActionOpMode {

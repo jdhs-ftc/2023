@@ -4,6 +4,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
@@ -12,8 +13,9 @@ import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 
 import kotlin.NotImplementedError;
-
+@Photon
 @Autonomous(preselectTeleOp = "Teleop Field Centric", name = "2+5!! Left Red, Far Park, Left Pixel", group = "Blue")
+
 public class FarParkLeftPixel extends AbstractVisionOpMode {
     /**
      * Is this a red or a blue autonomous?

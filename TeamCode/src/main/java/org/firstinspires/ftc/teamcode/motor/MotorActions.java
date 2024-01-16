@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 
@@ -44,21 +45,33 @@ public class MotorActions {
 
     public Action pixelToHook() {
         return new SequentialAction(
-                telemetryPacket -> {motorControl.clawArm.moveToHook(); return false;},
-                new SleepAction(1.25),
-                telemetryPacket -> { motorControl.claw.setPosition(0.95); return false;},
+                new InstantAction(motorControl.clawArm::moveToHook),
+                new InstantAction(() -> motorControl.slide.setTargetPosition(-60)),
+                new SleepAction(1), // prev 1.25
+               new InstantAction( () -> motorControl.claw.setPosition(0.95)),
                 new SleepAction(0.25),
-                telemetryPacket -> {motorControl.clawArm.moveDown(); return false;},
-                new SleepAction(0.25)
+                new InstantAction(motorControl.clawArm::moveDown)
         );
     }
 
     public Action placePixel() {
         return new SequentialAction(
+                hookToBackdrop(),
+                new SleepAction(0.6),
+                returnHook()
+        );
+    }
+
+    public Action hookToBackdrop() {
+        return new SequentialAction(
                 telemetryPacket -> {motorControl.slide.setTargetPosition(1000); return false;},
                 new SleepAction(0.4),
-                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;},
-                new SleepAction(0.6),
+                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;}
+        );
+    }
+
+    public Action returnHook() {
+        return new SequentialAction(
                 telemetryPacket -> {motorControl.hookArm.setPosition(1); return false;},
                 telemetryPacket -> {motorControl.slide.setTargetPosition(-40); return false;}
         );
@@ -127,6 +140,8 @@ public class MotorActions {
                     new SleepAction(0.4));
         }
 
+
+
         // release
         public Action release() {
             return new SequentialAction(t -> {
@@ -164,4 +179,5 @@ public class MotorActions {
                     telemetryPacket -> {motorControl.autoPlacer.setPosition(1); return false;});
         }
     }
+
 }

@@ -4,13 +4,15 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Rotation2d;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -20,15 +22,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.helpers.control.PIDFController;
 import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
+import org.firstinspires.ftc.teamcode.motor.MotorActions;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
 import org.firstinspires.ftc.teamcode.vision.pipelines.WhitePixelProcessor;
 import org.firstinspires.ftc.vision.VisionPortal;
 
+import java.util.ArrayList;
 import java.util.List;
 @Photon
-@TeleOp(name = "Teleop Field Centric")
+@TeleOp(name = "Teleop Field Centric Actions")
 @Config
-public class TeleopFieldCentric extends LinearOpMode {
+public class TeleopActions extends ActionOpMode {
 
     // TODO: PhotonFTC
 
@@ -41,6 +45,8 @@ public class TeleopFieldCentric extends LinearOpMode {
     LynxModule CONTROL_HUB;
     LynxModule EXPANSION_HUB;
     boolean fieldCentric = true;
+
+    List<Action> runningActions = new ArrayList<>();
 
 
     public enum LiftState {
@@ -67,6 +73,9 @@ public class TeleopFieldCentric extends LinearOpMode {
     boolean showTelemetryMenu = false;
     boolean showPoseTelemetry = false;
     boolean showCameraTelemetry = false;
+
+    MotorControl motorControl;
+    MotorActions motorActions;
 
 
     @Override
@@ -97,7 +106,8 @@ public class TeleopFieldCentric extends LinearOpMode {
         //telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         // Motor Init
-        MotorControl motorControl = new MotorControl(hardwareMap);
+        motorControl = new MotorControl(hardwareMap);
+        motorActions = new MotorActions(motorControl);
 
         motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
 
@@ -167,14 +177,21 @@ public class TeleopFieldCentric extends LinearOpMode {
             // Manual Control
             double padSlideControl = -gamepad2.left_stick_y;
             double padSlideControlMultiplier = 40;
-
+            /*
             double padArmControl = -gamepad2.right_stick_y;
             double padArmControlMultiplier = 2;
+
+             */
+
+            double padSuspendControl = -gamepad2.right_stick_y;
+            double padSuspendControlMultiplier = 1;
+
 
             // Misc
             double padGunnerDrive = gamepad2.right_stick_x; // only when right trigger held
             boolean padForceDown = gamepad2.dpad_down;
             boolean padMissedHook = gamepad2.dpad_up;
+
 
 
 
@@ -323,6 +340,7 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             // Arm (Manual)
             // Slide (Manual)
+            /*
             if (motorControl.clawArm.getTargetPosition() > 130 && padArmControl > 0) {
                 motorControl.clawArm.setTargetPosition(130);
 
@@ -331,78 +349,21 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             } else { motorControl.clawArm.setTargetPosition(motorControl.clawArm.getTargetPosition() + (padArmControl * padArmControlMultiplier));}
 
-            motorControl.suspend.setPower(gamepad2.left_stick_y);
+             */
+
+            motorControl.suspend.setPower(padSuspendControl * padSuspendControlMultiplier);
 
             // THE FULL STATE MACHINE
 
-            switch (liftState) {
-                case IDLE:
-                    if (pixelInClaw && !pixelInHook && (padHalfCycle || padFullCycle) && motorControl.slide.motor.getCurrentPosition() < 850) {
-                        liftState = LiftState.PIXEL_TO_HOOK;
-                        liftTimer.reset();
-                    }
-                    if (pixelInHook && padFullCycle) {
-                        liftState = LiftState.HOOK_TO_BACKDROP_HOLD;
-                        liftTimer.reset();
-                        motorControl.clawArm.moveDown();
-                        motorControl.slide.setTargetPosition(1000);
-                        //motorControl.hookArm.setPosition(0.3);
-                    }
-                    if (pixelInHook && padHighPreset) {
-                        liftState = LiftState.HOOK_TO_BACKDROP_WAIT;
-                        liftTimer.reset();
-                        motorControl.clawArm.moveDown();
-                        motorControl.slide.setTargetPosition(1000);
-                        //motorControl.hookArm.setPosition(0.3);
-                    }
-                    if (pixelInHook && padMidPreset) {
-                        liftState = LiftState.HOOK_TO_BACKDROP_WAIT;
-                        liftTimer.reset();
-                        motorControl.clawArm.moveDown();
-                        //motorControl.hookArm.setPosition(0.3);
-                    }
-                    break;
-                case PIXEL_TO_HOOK:
-                    motorControl.clawArm.moveToHook();
-                    motorControl.slide.setTargetPosition(-60);
-                    if (liftTimer.milliseconds() > 1000) { // prev 750
-                        pixelInClaw = false;
-                        pixelInHook = true;
-                        liftState = LiftState.CLAW_RELEASE;
-                        liftTimer.reset();
-                    }
-                    break;
-                case CLAW_RELEASE:
-                    if (liftTimer.milliseconds() > 250) {
-                        motorControl.clawArm.moveDown();
-                        liftState = LiftState.IDLE;
-                    }
-                    break;
-                case HOOK_TO_BACKDROP_HOLD:
-                    if (liftTimer.milliseconds() > 200 && motorControl.slide.closeEnough() && !padFullCycle) {
-                        motorControl.hookArm.setPosition(0.3);
-                        liftState = LiftState.PLACE;
-                        liftTimer.reset();
-                    }
-                    break;
-                case HOOK_TO_BACKDROP_WAIT:
-                    if (padFullCycle) {
-                        liftState = LiftState.HOOK_TO_BACKDROP_HOLD;
-                    }
-                    break;
-                case PLACE:
-                    if (liftTimer.milliseconds() > 750) {
-                        pixelInHook = false;
-                        motorControl.hookArm.setPosition(0.925); //1
-                        motorControl.clawArm.moveDown();
-                        motorControl.slide.setTargetPosition(-40);
-                        liftState = LiftState.IDLE;
-                    }
-                    break;
-                default:
-                    liftState = LiftState.IDLE;
-                    break;
+            if (pixelInClaw && !pixelInHook && (padHalfCycle || padFullCycle) && motorControl.slide.motor.getCurrentPosition() < 850 && runningActions.isEmpty()) {
+                run(pixelToHook());
             }
+            if (pixelInHook && padFullCycle && runningActions.isEmpty()) {
+                run(placePixel(() -> !padFullCycle)); // TODO: maybe causes issues?
+            }
+
+
+
             if (pixelInClaw) {
                 motorControl.claw.setPosition(0.82); //0.85
             } else {
@@ -471,6 +432,9 @@ public class TeleopFieldCentric extends LinearOpMode {
 
             TelemetryPacket packet = new TelemetryPacket();
             MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
+
+            updateAsync(packet);
+
             FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
             double loopTimeMs = loopTime.milliseconds();
@@ -525,4 +489,31 @@ public class TeleopFieldCentric extends LinearOpMode {
             telemetry.update();
         }
     }
+
+    Action pixelToHook() {
+        return new SequentialAction(
+                motorActions.pixelToHook(),
+                new InstantAction(() -> {pixelInClaw = false; pixelInHook = true;})
+        );
+    }
+
+    Action placePixel(input input) {
+        return new SequentialAction(
+                motorActions.hookToBackdrop(),
+                waitForInput(input),
+                motorActions.returnHook(),
+                new InstantAction(() -> {pixelInHook = false;})
+        );
+
+    }
+    // TODO: probably not needed, just make a normal action
+    interface input {
+        boolean isPressed();
+    }
+    Action waitForInput(input input) {
+        return telemetryPacket -> !input.isPressed();
+    }
+
+
+
 }

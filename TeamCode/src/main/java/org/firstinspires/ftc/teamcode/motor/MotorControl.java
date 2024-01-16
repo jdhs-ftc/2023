@@ -26,6 +26,7 @@ public class MotorControl {
     public final CRServo shooter;
     public final ColorSensor color;
     public final Servo autoPlacer;
+    public final DcMotor suspend;
 
     /**
      * Gets the current state of the arm and slide together.
@@ -91,6 +92,9 @@ public class MotorControl {
         hookArm.setPosition(1);
         shooter.setPower(0);
         autoPlacer.setPosition(1);
+
+        suspend = hardwareMap.get(DcMotor.class, "suspend");
+
 
         color = hardwareMap.get(ColorSensor.class, "color");
 

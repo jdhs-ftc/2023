@@ -29,6 +29,8 @@ public class MeepMeepTesting {
                 .setTangent(Math.toRadians(180))
                 //.afterTime(1,vision.switchBackAction())
                 .splineTo(new Vector2d(-60,-36), Math.toRadians(180))
+                        .splineTo(new Vector2d(0,0), Math.toRadians(180))
+                        .splineTo(new Vector2d(30,30), Math.toRadians(180))
 
                 .build());
 
