@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -26,9 +27,10 @@ import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.List;
 @Photon
-@TeleOp(name = "Teleop Field Centric")
+@TeleOp(name = "OLDTeleop")
+@Disabled
 @Config
-public class TeleopFieldCentric extends LinearOpMode {
+public class OldTeleop extends LinearOpMode {
 
     // TODO: PhotonFTC
 

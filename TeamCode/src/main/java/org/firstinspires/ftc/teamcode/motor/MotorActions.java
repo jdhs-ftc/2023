@@ -15,6 +15,7 @@ public class MotorActions {
     public final Claw claw;
     public final AutoPlacer autoPlacer;
     public final Hook hook;
+    public final Seperator seperator;
 
     public MotorActions(MotorControl motorControl) {
         this.motorControl = motorControl;
@@ -23,6 +24,7 @@ public class MotorActions {
         this.claw = new Claw();
         this.hook = new Hook();
         this.autoPlacer = new AutoPlacer();
+        this.seperator = new Seperator();
     }
     public Action waitUntilFinished() {
         return new Action() {
@@ -59,6 +61,27 @@ public class MotorActions {
                 hookToBackdrop(),
                 new SleepAction(0.6),
                 returnHook()
+        );
+    }
+
+    public Action placeTwoPixel() {
+        return new SequentialAction(
+                hookToBackdrop(),
+                new SleepAction(0.6),
+                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;},
+                new SleepAction(0.2),
+                seperator.release(),
+                hookToBackdrop(),
+                new SleepAction(0.3),
+                returnHook()
+        );
+    }
+
+    public Action placeSecondPixel() {
+        return new SequentialAction(
+                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;},
+                new SleepAction(0.2),
+                seperator.release()
         );
     }
 
@@ -177,6 +200,15 @@ public class MotorActions {
                     telemetryPacket -> {motorControl.autoPlacer.setPosition(0.5); return false;},
                     new SleepAction(0.5),
                     telemetryPacket -> {motorControl.autoPlacer.setPosition(1); return false;});
+        }
+    }
+
+    public class Seperator {
+        public Action hold() {
+            return new InstantAction(() -> motorControl.seperator.setPosition(0.5)); // TODO TUNE
+        }
+        public Action release() {
+            return new InstantAction(() -> motorControl.seperator.setPosition(0));
         }
     }
 

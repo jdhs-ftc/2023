@@ -30,11 +30,10 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import java.util.ArrayList;
 import java.util.List;
 @Photon
-@TeleOp(name = "Teleop Field Centric Actions")
+@TeleOp(name = "Teleop Field Centric")
 @Config
 public class TeleopActions extends ActionOpMode {
 
-    // TODO: PhotonFTC
 
     // Declare a PIDF Controller to regulate heading
     private final PIDFController.PIDCoefficients HEADING_PID_JOYSTICK = new PIDFController.PIDCoefficients(0.2, 0.0, 1);
@@ -69,10 +68,10 @@ public class TeleopActions extends ActionOpMode {
 
     boolean showMotorTelemetry = true;
     boolean showStateTelemetry = true;
-    boolean showLoopTimes = false;
+    boolean showLoopTimes = true;
     boolean showTelemetryMenu = false;
-    boolean showPoseTelemetry = false;
-    boolean showCameraTelemetry = false;
+    boolean showPoseTelemetry = true;
+    boolean showCameraTelemetry = true;
 
     MotorControl motorControl;
     MotorActions motorActions;
@@ -355,11 +354,11 @@ public class TeleopActions extends ActionOpMode {
 
             // THE FULL STATE MACHINE
 
-            if (pixelInClaw && !pixelInHook && (padHalfCycle || padFullCycle) && motorControl.slide.motor.getCurrentPosition() < 850 && runningActions.isEmpty()) {
+            if (pixelInClaw && padHalfCycle && motorControl.slide.motor.getCurrentPosition() < 850 && runningActions.isEmpty()) {
                 run(pixelToHook());
             }
             if (pixelInHook && padFullCycle && runningActions.isEmpty()) {
-                run(placePixel(() -> !padFullCycle)); // TODO: maybe causes issues?
+                run(placePixel(this::padRelease)); // TODO: maybe causes issues?
             }
 
 
@@ -512,6 +511,10 @@ public class TeleopActions extends ActionOpMode {
     }
     Action waitForInput(input input) {
         return telemetryPacket -> !input.isPressed();
+    }
+
+    boolean padRelease() {
+        return gamepad2.right_trigger > 0.25;
     }
 
 

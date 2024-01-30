@@ -1,6 +1,7 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
@@ -16,21 +17,49 @@ public class MeepMeepTesting {
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(50, 30, Math.toRadians(180), Math.toRadians(180), 15)
+                .setConstraints(50, 40, Math.toRadians(180), Math.toRadians(180), 15)
                 .setColorScheme(new ColorSchemeBlueDark())
                 .setDimensions(14,17.25)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-60, -36, Math.toRadians(180)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(12, -62, Math.toRadians(-90)))
                 .setReversed(true)
-                //.afterTime(1,vision.switchFrontAction())
-                .splineTo(new Vector2d(48,-36), Math.toRadians(0))
-                .setReversed(false)
+                // GOTO GROUND PIXEL
+                .splineToConstantHeading(new Vector2d(24,-48), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(24,-21), Math.toRadians(90))
+                .endTrajectory()
+                .stopAndAdd(motorActions.claw.release())
+
+
+                // GOTO BACKBOARD START
+                .setReversed(true)
+                        .setTangent(Math.toRadians(0))
+
+                .splineToLinearHeading(new Pose2d(56.5,-33,Math.toRadians(180)), Math.toRadians(0))
+                .endTrajectory()
+                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
+                .endTrajectory()
+
+
+                // GOTO STACK
                 .setTangent(Math.toRadians(180))
-                //.afterTime(1,vision.switchBackAction())
-                .splineTo(new Vector2d(-60,-36), Math.toRadians(180))
-                        .splineTo(new Vector2d(0,0), Math.toRadians(180))
-                        .splineTo(new Vector2d(30,30), Math.toRadians(180))
+                .setReversed(false)
+                .splineTo(new Vector2d(20, -60), Math.toRadians(180))
+                .splineTo(new Vector2d(-36, -60), Math.toRadians(180))
+                .splineToSplineHeading(new Pose2d(-64,-36,Math.toRadians(180)), Math.toRadians(180))
+                .endTrajectory()
+                .stopAndAdd(motorActions.claw.grab())
+
+
+                // GOTO BACKBOARD
+                .setReversed(true)
+                .afterTime(0.5, motorActions.pixelToHook())
+                .splineToConstantHeading(new Vector2d(-36, -14), Math.toRadians(0))
+                .splineTo(new Vector2d(20, -14), Math.toRadians(0))
+                //.afterTime(0.5, drive.CorrectWithTagAction())
+                .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
+                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
+                .endTrajectory()
 
                 .build());
 

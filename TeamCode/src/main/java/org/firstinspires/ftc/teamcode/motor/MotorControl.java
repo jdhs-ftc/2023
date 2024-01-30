@@ -26,6 +26,7 @@ public class MotorControl {
     public final CRServo shooter;
     public final ColorSensor color;
     public final Servo autoPlacer;
+    public final Servo seperator;
     public final DcMotor suspend;
 
     /**
@@ -88,10 +89,12 @@ public class MotorControl {
         hookArm = hardwareMap.get(Servo.class, "hookArm");
         shooter = hardwareMap.get(CRServo.class, "shooter");
         autoPlacer = hardwareMap.get(Servo.class, "autoPlacer");
+        seperator = hardwareMap.get(Servo.class, "seperator");
         claw.setPosition(1);
         hookArm.setPosition(1);
         shooter.setPower(0);
         autoPlacer.setPosition(1);
+        seperator.setPosition(0); // TODO tune
 
         suspend = hardwareMap.get(DcMotor.class, "suspend");
 

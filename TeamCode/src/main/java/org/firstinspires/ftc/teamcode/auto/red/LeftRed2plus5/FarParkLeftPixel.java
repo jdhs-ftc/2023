@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.auto.red.LeftRed2plus5;
 
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.outoftheboxrobotics.photoncore.Photon;
@@ -116,13 +115,13 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
     @Override
     public Action trajLeft(AprilTagDrive drive, MotorActions motorActions) { // TODO TOO LONG
 
-        return drive.actionBuilder(drive.pose)
+        return drive.actionBuilder(drive.pose) // new Pose2d(-36,-62,Math.toRadians(-90))
                 .setReversed(true)
                 // GOTO GROUND PIXEL
                 .splineToConstantHeading(new Vector2d(-47,-48), Math.toRadians(90))
                 .splineToConstantHeading(new Vector2d(-47,-21), Math.toRadians(90))
                 .endTrajectory()
-                .stopAndAdd(motorActions.claw.release())
+                //.stopAndAdd(motorActions.claw.release())
 
 
                 // GOTO STACK
@@ -130,17 +129,17 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineToConstantHeading(new Vector2d(-48, -12), Math.toRadians(180))
                 .splineToSplineHeading(new Pose2d(-64,-12,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
+                //.stopAndAdd(motorActions.claw.grab())
 
 
                 // GOTO BACKBOARD
                 .setReversed(true)
-                .afterTime(0.5, motorActions.pixelToHook())
+                //.afterTime(0.5, motorActions.pixelToHook())
                 .splineToConstantHeading(new Vector2d(-36, -14), Math.toRadians(0))
                 .splineTo(new Vector2d(20, -14), Math.toRadians(0))
                 //.afterTime(0.5, drive.CorrectWithTagAction())
                 .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
-                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
+                //.stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 
                 // GOTO STACK
@@ -150,7 +149,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineTo(new Vector2d(-36, -60), Math.toRadians(180))
                 .splineToSplineHeading(new Pose2d(-64,-36,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
+                //.stopAndAdd(motorActions.claw.grab())
 
 
                 // GOTO BACKBOARD
@@ -160,7 +159,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineTo(new Vector2d(20, -14), Math.toRadians(0))
                 //.afterTime(0.5, drive.CorrectWithTagAction())
                 .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
-                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
+                //.stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 
                 // GOTO STACK
@@ -170,7 +169,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineTo(new Vector2d(-36, -60), Math.toRadians(180))
                 .splineToSplineHeading(new Pose2d(-64,-36,Math.toRadians(180)), Math.toRadians(180))
                 .endTrajectory()
-                .stopAndAdd(motorActions.claw.grab())
+                //.stopAndAdd(motorActions.claw.grab())
 
 
 
@@ -182,7 +181,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineTo(new Vector2d(20, -14), Math.toRadians(0))
                 //.afterTime(0.5, drive.CorrectWithTagAction())
                 .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
-                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
+                //.stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 
                 .build();

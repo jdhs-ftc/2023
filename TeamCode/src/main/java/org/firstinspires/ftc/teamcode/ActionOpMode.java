@@ -29,9 +29,7 @@ public abstract class ActionOpMode extends LinearOpMode {
     }
 
     protected void updateAsync(TelemetryPacket packet) {
-
-        // updated based on gamepads
-
+        
         // update running actions
         List<Action> newActions = new ArrayList<>();
         for (Action action : runningActions) {
