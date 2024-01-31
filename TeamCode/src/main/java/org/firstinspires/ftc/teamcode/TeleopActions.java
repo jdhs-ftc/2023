@@ -469,6 +469,8 @@ public class TeleopActions extends ActionOpMode {
                 telemetry.addData("hookPower", motorControl.hookArm.getPosition());
                 telemetry.addData("colorAlpha", colorAlpha);
                 telemetry.addData("colorAlphaLog", Math.log10(colorAlpha));
+                telemetry.addData("touchSensor", motorControl.touch.isPressed());
+                telemetry.addData("touchSensor", motorControl.magnet.isPressed());
             }
             if (showStateTelemetry) {
                 telemetry.addLine("--- State Machine ---");

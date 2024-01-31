@@ -36,23 +36,20 @@ public class MotorActions {
     }
 
     public Action update() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket t) {
-                motorControl.update();
-                return true;
-            }
+        return t -> {
+            motorControl.update();
+            return true;
         };
     }
 
     public Action pixelToHook() {
         return new SequentialAction(
-                new InstantAction(motorControl.clawArm::moveToHook),
-                new InstantAction(() -> motorControl.slide.setTargetPosition(-60)),
-                new SleepAction(1), // prev 1.25
-               new InstantAction( () -> motorControl.claw.setPosition(0.95)),
-                new SleepAction(0.25),
-                new InstantAction(motorControl.clawArm::moveDown)
+                slide.moveDown(),
+                clawArm.moveHook(),
+                clawArm.waitUntilFinished(),
+                claw.release(),
+                clawArm.moveDown(),
+                clawArm.waitUntilFinished()
         );
     }
 
@@ -132,19 +129,23 @@ public class MotorActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    return motorControl.clawArm.closeEnough();
+                    return !motorControl.clawArm.closeEnough();
                 }
             };
+        }
+
+        public Action moveHook() {
+            return (telemetryPacket -> {motorControl.clawArm.moveToHook();return false;});
+        }
+        public Action moveDown() {
+            return (telemetryPacket -> {motorControl.clawArm.moveDown();return false;});
         }
     }
     public class Slide {
         public Action setTargetPosition(double position) {
-            return new Action() {
-                @Override
-                public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.slide.setTargetPosition(position);
-                    return false;
-                }
+            return t -> {
+                motorControl.slide.setTargetPosition(position);
+                return false;
             };
         }
         public Action waitUntilFinished() {
@@ -154,6 +155,9 @@ public class MotorActions {
                     return motorControl.slide.closeEnough();
                 }
             };
+        }
+        public Action moveDown() {
+            return setTargetPosition(-60);
         }
     }
 
@@ -167,10 +171,7 @@ public class MotorActions {
 
         // release
         public Action release() {
-            return new SequentialAction(t -> {
-                motorControl.claw.setPosition(0.95);
-                return false;
-            }, new SleepAction(0.4));
+            return new SequentialAction(t -> {motorControl.claw.setPosition(0.95);return false;},new SleepAction(0.4));
         }
     }
     public class Hook {

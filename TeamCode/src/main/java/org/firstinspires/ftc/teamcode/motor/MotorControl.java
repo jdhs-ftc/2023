@@ -10,9 +10,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.helpers.control.PIDFController;
 
 /**
  * This class is used to control the motor systems on the robot.
@@ -28,6 +28,8 @@ public class MotorControl {
     public final Servo autoPlacer;
     public final Servo seperator;
     public final DcMotor suspend;
+    public final TouchSensor touch;
+    public final TouchSensor magnet;
 
     /**
      * Gets the current state of the arm and slide together.
@@ -97,9 +99,9 @@ public class MotorControl {
         seperator.setPosition(0); // TODO tune
 
         suspend = hardwareMap.get(DcMotor.class, "suspend");
-
-
         color = hardwareMap.get(ColorSensor.class, "color");
+        touch = hardwareMap.get(TouchSensor.class, "touch");
+        magnet = hardwareMap.get(TouchSensor.class, "magnet");
 
         activatePreset(combinedPreset.GRAB);
     }
@@ -131,29 +133,29 @@ public class MotorControl {
         return clawArm.isOverCurrent() || slide.isOverCurrent();
     }
 
-
+    public enum ArmPreset {
+        DOWN,
+        MOVING_DOWN,
+        HOOK,
+        MOVING_HOOK
+    }
     /**
      * Lower arm control
      */
     @Config
-    public static class ClawArm extends ControlledMotor {
-        public static final PIDFController.PIDCoefficients PID_CONSTANTS = new PIDFController.PIDCoefficients(0.01, 0.0, 0.01);
-        public final PIDFController controller = new PIDFController(PID_CONSTANTS);
-        public enum Preset {
-            DOWN,
-            LOW_PLACE,
-            HOOK
-        }
-        public Preset lastPreset = Preset.DOWN;
+    public class ClawArm extends ControlledMotor {
+        //public static final PIDFController.PIDCoefficients PID_CONSTANTS = new PIDFController.PIDCoefficients(0.01, 0.0, 0.01);
+        //public final PIDFController controller = new PIDFController(PID_CONSTANTS);
+
+        public ArmPreset currentPreset = ArmPreset.DOWN;
 
         public ClawArm(@NonNull HardwareMap hardwareMap) {
-            targetPosition = 0;
             motor = hardwareMap.get(DcMotorEx.class, "arm");
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motor.setCurrentAlert(4.0, CurrentUnit.AMPS);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            controller.setOutputBounds(-0.3, 0.5);
+            //controller.setOutputBounds(-0.3, 0.5);
         }
 
         /**
@@ -161,7 +163,6 @@ public class MotorControl {
          */
         public void reset() {
             motor.setPower(0);
-            targetPosition = 0;
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
@@ -170,35 +171,39 @@ public class MotorControl {
          * This updates the arm motor to match the current state. This should be run in a loop.
          */
         public void update() {
-            controller.targetPosition = Math.round(targetPosition);
-            /*
-            if (motor.getCurrentPosition() < 20) {
-                controller.pid = new PIDFController.PIDCoefficients(0.01, 0.0, 0.01);
-                controller.setOutputBounds(-0.3, 0.5);
-            } else {
-                controller.pid = new PIDFController.PIDCoefficients(0.05, 0.0, 0.01);
-                controller.setOutputBounds(-0.6, 0.6);
-            }
-
-             */
-            if (!motor.isOverCurrent()) {
-                motor.setPower(controller.update(motor.getCurrentPosition()));
-            } else {
-                motor.setPower(0);
-
+            switch (currentPreset) {
+                case DOWN:
+                    motor.setPower(0);
+                    break;
+                case MOVING_DOWN:
+                    if (!touch.isPressed()) {
+                        motor.setPower(-0.5);
+                    } else {
+                        motor.setPower(0);
+                        currentPreset = ArmPreset.DOWN;
+                    }
+                    break;
+                case HOOK:
+                    motor.setPower(0);
+                    break;
+                case MOVING_HOOK:
+                    if (!magnet.isPressed()) {
+                        motor.setPower(0.5);
+                    } else {
+                        motor.setPower(0);
+                        currentPreset = ArmPreset.HOOK;
+                    }
+                    break;
             }
         }
 
-        public void movePreset(Preset newPreset) {
-            if (newPreset == lastPreset) {
+        public void movePreset(ArmPreset newPreset) {
+            if (newPreset == currentPreset) {
                 return;
             }
             switch (newPreset) {
                 case DOWN:
                     moveDown();
-                    break;
-                case LOW_PLACE:
-                    moveLowPlace();
                     break;
                 case HOOK:
                     moveToHook();
@@ -206,23 +211,16 @@ public class MotorControl {
             }
         }
 
-        public void moveLowPlace() {
-            setTargetPosition(60);
-            lastPreset = Preset.LOW_PLACE;
-        }
-
         public void moveDown() {
-            this.setTargetPosition(0);
-            lastPreset = Preset.DOWN;
+            currentPreset = ArmPreset.MOVING_DOWN;
         }
 
         public void moveToHook() {
-            setTargetPosition(140);
-            lastPreset = Preset.HOOK;
+            currentPreset = ArmPreset.MOVING_HOOK;
         }
 
         public boolean closeEnough() {
-            return Math.abs(motor.getCurrentPosition() - targetPosition) < 2;
+            return currentPreset == ArmPreset.DOWN || currentPreset == ArmPreset.HOOK;
         }
 
 
