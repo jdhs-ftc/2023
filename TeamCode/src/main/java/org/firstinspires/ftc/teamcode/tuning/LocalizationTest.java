@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.Drawing;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TankDrive;
 import org.firstinspires.ftc.teamcode.auto.VisionHelper;
@@ -19,7 +21,9 @@ public class LocalizationTest extends LinearOpMode {
     private AprilTagDetection tag;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             //MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
             VisionHelper vision = new VisionHelper(hardwareMap, PoseStorage.Team.BLUE);
@@ -52,14 +56,9 @@ public class LocalizationTest extends LinearOpMode {
 
                 drive.correctWithTag();
                 drive.updatePoseEstimate();
-
                 TelemetryPacket packet = new TelemetryPacket();
-                MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose);
-                packet.fieldOverlay().fillCircle(drive.pose.position.x, drive.pose.position.y,1);
-
                 telemetry.addData("x", drive.pose.position.x);
                 telemetry.addData("y", drive.pose.position.y);
-                telemetry.addData("heading", drive.pose.heading);
                 telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
                 if (!drive.totalDetections.isEmpty()) {
                     tag = drive.totalDetections.get(0);
@@ -79,6 +78,11 @@ public class LocalizationTest extends LinearOpMode {
                 FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
                 telemetry.update();
+
+
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
             }
         } else if (TuningOpModes.DRIVE_CLASS.equals(TankDrive.class)) {
             TankDrive drive = new TankDrive(hardwareMap, new Pose2d(0, 0, 0));
@@ -100,6 +104,11 @@ public class LocalizationTest extends LinearOpMode {
                 telemetry.addData("y", drive.pose.position.y);
                 telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
                 telemetry.update();
+
+                TelemetryPacket packet = new TelemetryPacket();
+                packet.fieldOverlay().setStroke("#3F51B5");
+                Drawing.drawRobot(packet.fieldOverlay(), drive.pose);
+                FtcDashboard.getInstance().sendTelemetryPacket(packet);
             }
         } else {
             throw new RuntimeException();
