@@ -49,7 +49,7 @@ public class MotorControl {
         switch (getCurrentPreset()) {
             case IDLE:
                 clawArm.moveDown();
-                slide.setTargetPosition(-40);
+                slide.setTargetPosition(40);
                 break;
             case PLACE:
                 clawArm.moveDown();
@@ -230,7 +230,7 @@ public class MotorControl {
      */
     public static class Slide extends ControlledMotor {
 
-
+        boolean resetting = false;
         /**
          * This initializes the slide motor. This should be run before any other methods.
          *
@@ -239,7 +239,7 @@ public class MotorControl {
         public Slide(HardwareMap hardwareMap) {
             motor = hardwareMap.get(DcMotorEx.class, "slide");
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            motor.setCurrentAlert(8, CurrentUnit.AMPS);
+            motor.setCurrentAlert(6, CurrentUnit.AMPS);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         }
@@ -259,22 +259,35 @@ public class MotorControl {
          * This updates the slide motor to match the current state. This should be run in a loop.
          */
         public void update() {
-            // overly complex slide code
-            // obtain the encoder position and calculate the error
-            double slideError = targetPosition - motor.getCurrentPosition();
-            motor.setTargetPosition((int) targetPosition);
-            motor.setTargetPositionTolerance(5);
-            if (slideError > 0) {
-                motor.setPower(0.8);
+            if (resetting) {
+                if (motor.getCurrent(CurrentUnit.AMPS) > 2.5) {
+                    reset();
+                    resetting = false;
+                }
             } else {
-                motor.setPower(-0.5);
-            }
-            if (!motor.isOverCurrent()) {
-                motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            } else {
-                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                // overly complex slide code
+                // obtain the encoder position and calculate the error
+                double slideError = targetPosition - motor.getCurrentPosition();
+                motor.setTargetPosition((int) targetPosition);
+                motor.setTargetPositionTolerance(5);
+                if (slideError > 0 && !motor.isOverCurrent()) {
+                    motor.setPower(0.8);
+                } else {
+                    motor.setPower(-0.5);
+                }
+                if (!motor.isOverCurrent()) {
+                    motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                } else {
+                    motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+                }
             }
+        }
+
+        public void findZero() {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setPower(-0.5);
+            resetting = true;
         }
 
 

@@ -61,6 +61,26 @@ public class MeepMeepTesting {
                 .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 
+                // GOTO STACK
+                .setTangent(Math.toRadians(180))
+                .setReversed(false)
+                .splineTo(new Vector2d(20, -60), Math.toRadians(180))
+                .splineTo(new Vector2d(-36, -60), Math.toRadians(180))
+                .splineToSplineHeading(new Pose2d(-64,-36,Math.toRadians(180)), Math.toRadians(180))
+                .endTrajectory()
+                .stopAndAdd(motorActions.claw.grab())
+
+
+                // GOTO BACKBOARD
+                .setReversed(true)
+                .afterTime(0.5, motorActions.pixelToHook())
+                .splineToConstantHeading(new Vector2d(-36, -14), Math.toRadians(0))
+                .splineTo(new Vector2d(20, -14), Math.toRadians(0))
+                //.afterTime(0.5, drive.CorrectWithTagAction())
+                .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
+                .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
+                .endTrajectory()
+
                 .build());
 
 

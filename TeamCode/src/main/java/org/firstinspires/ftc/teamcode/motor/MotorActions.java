@@ -27,18 +27,13 @@ public class MotorActions {
         this.seperator = new Seperator();
     }
     public Action waitUntilFinished() {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket t) {
-                return motorControl.closeEnough();
-            }
-        };
+        return t -> motorControl.closeEnough();
     }
 
     public Action update() {
         return t -> {
             motorControl.update();
-            return true;
+            return true; // this returns true to make it loop forever; use RaceParallelCommand
         };
     }
 
@@ -65,10 +60,7 @@ public class MotorActions {
         return new SequentialAction(
                 hookToBackdrop(),
                 new SleepAction(0.6),
-                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;},
-                new SleepAction(0.2),
-                seperator.release(),
-                hookToBackdrop(),
+                placeSecondPixel(),
                 new SleepAction(0.3),
                 returnHook()
         );
@@ -76,32 +68,40 @@ public class MotorActions {
 
     public Action placeSecondPixel() {
         return new SequentialAction(
-                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;},
-                new SleepAction(0.2),
+                hook.seperatePos(),
+                new SleepAction(0.3),
+                hook.raise(),
                 seperator.release()
         );
     }
 
     public Action hookToBackdrop() {
         return new SequentialAction(
-                telemetryPacket -> {motorControl.slide.setTargetPosition(1000); return false;},
+                slide.moveUp(),
                 new SleepAction(0.4),
-                telemetryPacket -> {motorControl.hookArm.setPosition(0.2); return false;}
+                hook.raise()
         );
     }
 
     public Action returnHook() {
         return new SequentialAction(
-                telemetryPacket -> {motorControl.hookArm.setPosition(1); return false;},
-                telemetryPacket -> {motorControl.slide.setTargetPosition(-40); return false;}
+                hook.lower(),
+                slide.moveDown()
         );
     }
 
+    public Action log(String message) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket t) {
+                System.out.println(message);
+                return false;
+            }
+        };
+    }
+
     public Action autoPlace() {
-        return new SequentialAction(
-                telemetryPacket -> {motorControl.autoPlacer.setPosition(0.3); return false;},
-                new SleepAction(0.5),
-                telemetryPacket -> {motorControl.autoPlacer.setPosition(1); return false;});
+        return autoPlacer.place();
     }
 
     public class ClawArm {
@@ -152,12 +152,16 @@ public class MotorActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    return motorControl.slide.closeEnough();
+                    return !motorControl.slide.closeEnough();
                 }
             };
         }
+
+        public Action moveUp() {
+            return setTargetPosition(1100);
+        }
         public Action moveDown() {
-            return setTargetPosition(-60);
+            return setTargetPosition(40);
         }
     }
 
@@ -168,10 +172,9 @@ public class MotorActions {
         }
 
 
-
         // release
         public Action release() {
-            return new SequentialAction(t -> {motorControl.claw.setPosition(0.95);return false;},new SleepAction(0.4));
+            return new SequentialAction(t -> {motorControl.claw.setPosition(0.91);return false;},new SleepAction(0.4));
         }
     }
     public class Hook {
@@ -179,7 +182,7 @@ public class MotorActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.hookArm.setPosition(0.3);
+                    motorControl.hookArm.setPosition(0.5);
                     return false;
                 }
             };
@@ -189,6 +192,15 @@ public class MotorActions {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
                     motorControl.hookArm.setPosition(1);
+                    return false;
+                }
+            };
+        }
+        public Action seperatePos(){
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket t) {
+                    motorControl.hookArm.setPosition(0.6); // TODO TUNE
                     return false;
                 }
             };
@@ -212,5 +224,6 @@ public class MotorActions {
             return new InstantAction(() -> motorControl.seperator.setPosition(0));
         }
     }
+
 
 }

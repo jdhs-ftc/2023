@@ -44,7 +44,7 @@ public class VisionHelper {
 
         aprilTagFront = new AprilTagProcessor.Builder()
                 // TODO: CALIBRATE .setLensIntrinsics(...)
-                .setLensIntrinsics(721.5303734, 717.4905364, 310.2800085, 235.908762)
+                .setLensIntrinsics(721.5303734f, 717.4905364f, 310.2800085f, 235.908762f)
                 .build();
         CameraStreamProcessor cameraStreamProcessor = new CameraStreamProcessor();
 
