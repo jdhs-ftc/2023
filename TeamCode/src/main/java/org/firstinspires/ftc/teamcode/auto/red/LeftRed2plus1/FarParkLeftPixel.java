@@ -4,14 +4,12 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.auto.AbstractVisionOpMode;
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
-@Photon
 @Autonomous(preselectTeleOp = "Teleop Field Centric", name = "2+1 Left Red, Far Park, Left Pixel", group = "Blue")
 public class FarParkLeftPixel extends AbstractVisionOpMode {
     /**
@@ -39,8 +37,8 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
         return drive.actionBuilder(drive.pose)
                 .setReversed(true)
                 // GOTO GROUND PIXEL
-                .splineToConstantHeading(new Vector2d(-42,-47), Math.toRadians(90))
-                .splineToSplineHeading(new Pose2d(-33,-32, Math.toRadians(0)), Math.toRadians(90))
+                .splineToConstantHeading(new Vector2d(-44,-47), Math.toRadians(90))
+                .splineToSplineHeading(new Pose2d(-35,-32, Math.toRadians(0)), Math.toRadians(90))
                 .endTrajectory()
                 .stopAndAdd(motorActions.claw.release())
 
@@ -59,7 +57,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineToConstantHeading(new Vector2d(-36, -12), Math.toRadians(0))
                 .splineTo(new Vector2d(20, -12), Math.toRadians(0))
                 //.afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(53,-44, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(53,-48, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 
@@ -71,8 +69,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
     @Override
     public Action trajCenter(AprilTagDrive drive, MotorActions motorActions) {
 
-        return drive.actionBuilder(drive.pose)
-                .setReversed(true)
+        return drive.actionBuilder(new Pose2d(-36,-62,Math.toRadians(-90)))
                 .setReversed(true)
                 // GOTO GROUND PIXEL
                 .splineToConstantHeading(new Vector2d(-38,-19), Math.toRadians(90))
@@ -92,7 +89,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .afterTime(0.5, motorActions.pixelToHook())
                 .splineToConstantHeading(new Vector2d(-28, -12), Math.toRadians(0))
                 .splineTo(new Vector2d(20, -12), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(56.5,-37, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(56.5,-42, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 
@@ -106,7 +103,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
     @Override
     public Action trajLeft(AprilTagDrive drive, MotorActions motorActions) {
 
-        return drive.actionBuilder(drive.pose)
+        return drive.actionBuilder(new Pose2d(-36,-62,Math.toRadians(-90)))
                 .setReversed(true)
                 // GOTO GROUND PIXEL
                 .strafeTo(new Vector2d(-47,-48))
@@ -129,7 +126,7 @@ public class FarParkLeftPixel extends AbstractVisionOpMode {
                 .splineToConstantHeading(new Vector2d(-36, -14), Math.toRadians(0))
                 .splineTo(new Vector2d(20, -14), Math.toRadians(0))
                 //.afterTime(0.5, drive.CorrectWithTagAction())
-                .splineToSplineHeading(new Pose2d(56.5,-33, Math.toRadians(180)), Math.toRadians(0))
+                .splineToSplineHeading(new Pose2d(55,-38, Math.toRadians(180)), Math.toRadians(0))
                 .stopAndAdd(new ParallelAction(motorActions.autoPlace(),motorActions.placePixel()))
                 .endTrajectory()
 

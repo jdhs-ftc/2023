@@ -64,7 +64,7 @@ public class AprilTagDrive extends MecanumDrive {
     Pose2d localizerPose;
     Vector2d filteredVector;
     boolean shouldTagCorrect = false;
-    VisionHelper vHelper = null;
+    public VisionHelper vHelper = null;
     boolean frontCamActive = true;
     boolean backCamActive = true;
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTagBack) {

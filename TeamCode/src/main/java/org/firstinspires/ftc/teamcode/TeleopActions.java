@@ -15,7 +15,6 @@ import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -33,7 +32,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.ArrayList;
 import java.util.List;
-@Photon
+
 @TeleOp(name = "Teleop Field Centric")
 @Config
 public class TeleopActions extends ActionOpMode {
@@ -51,16 +50,6 @@ public class TeleopActions extends ActionOpMode {
     public MecanumDrive drive;
 
     List<Action> runningActions = new ArrayList<>();
-
-
-    public enum LiftState {
-        IDLE,
-        PIXEL_TO_HOOK,
-        HOOK_TO_BACKDROP_HOLD,
-        HOOK_TO_BACKDROP_WAIT, CLAW_RELEASE, PLACE
-    }
-
-    LiftState liftState = LiftState.IDLE;
     final ElapsedTime liftTimer = new ElapsedTime();
     final ElapsedTime loopTime = new ElapsedTime();
     boolean pixelInClaw = false;
@@ -81,6 +70,9 @@ public class TeleopActions extends ActionOpMode {
 
     MotorControl motorControl;
     MotorActions motorActions;
+    boolean drivingEnabled = true;
+    boolean actionRunning = false;
+    boolean suspendSet = false;
 
 
     @Override
@@ -192,8 +184,11 @@ public class TeleopActions extends ActionOpMode {
 
             // Misc
             double padGunnerDrive = gamepad2.right_stick_x; // only when right trigger held
-            boolean padForceDown = false;//gamepad2.dpad_down;
+            boolean padForceDown = gamepad2.dpad_down && gamepad2.options;
             boolean padMissedHook = gamepad2.dpad_up;
+            boolean padAutoPlacer = gamepad2.dpad_down && gamepad2.share;
+
+            boolean padSuspendMode = gamepad2.triangle && !previousGamepad2.triangle;
 
 
             // Update the speed
@@ -268,7 +263,7 @@ public class TeleopActions extends ActionOpMode {
                         -padGunnerDrive * 0.5
                 ));
             }
-            if (!driveActionRunning()) {
+            if (drivingEnabled) {
                 // check if the right stick is pushed to the edge
                 // this if statement is backwards; if true, it's not pushed drive normal
                 if (Math.sqrt(Math.pow(controllerHeading.x, 2.0) + Math.pow(controllerHeading.y, 2.0)) < 0.4) {
@@ -361,10 +356,10 @@ public class TeleopActions extends ActionOpMode {
 
             // THE FULL STATE MACHINE
 
-            if (pixelInClaw && padHalfCycle && motorControl.slide.motor.getCurrentPosition() < 850 && runningActions.isEmpty()) {
+            if (pixelInClaw && padHalfCycle && motorControl.slide.motor.getCurrentPosition() < 850 && !actionRunning) {
                 run(pixelToHook());
             }
-            if (pixelInHook && padFullCycle && runningActions.isEmpty()) {
+            if (pixelInHook && padFullCycle && !actionRunning) {
                 run(placePixel(this::padRelease)); // TODO: maybe causes issues?
             }
 
@@ -387,16 +382,20 @@ public class TeleopActions extends ActionOpMode {
             }
             if (padMissedHook) {
                 pixelInHook = false;
+                motorControl.seperator.setPosition(0);
             }
 
 
             // Reset
 
             if (padForceDown) {
-                liftState = LiftState.IDLE;
-                motorControl.clawArm.setTargetPosition(0);
-                motorControl.slide.setTargetPosition(0);
                 motorControl.hookArm.setPosition(1);
+            }
+
+            if (padAutoPlacer) {
+                motorControl.autoPlacer.setPosition(0.5);
+            } else {
+                motorControl.autoPlacer.setPosition(1);
             }
 
             // Shooter
@@ -415,12 +414,20 @@ public class TeleopActions extends ActionOpMode {
             }
 
              */
-
+            /*
             if (gamepad2.dpad_down) {
                 motorControl.seperator.setPosition(0.35);
             } else {
                 motorControl.seperator.setPosition(0);
             }
+
+             */
+
+             if (currentGamepad2.triangle && !previousGamepad2.triangle) {
+                    motorControl.hookArm.setPosition(0.6);
+                    motorControl.slide.setTargetPosition(1200);
+             }
+
 
             //gamepad1.rumble(CONTROL_HUB.getCurrent(CurrentUnit.AMPS),EXPANSION_HUB.getCurrent(CurrentUnit.AMPS),Gamepad.RUMBLE_DURATION_CONTINUOUS);
             if (motorControl.isOverCurrent()) {
@@ -455,7 +462,7 @@ public class TeleopActions extends ActionOpMode {
             // TELEMETRY
 
             TelemetryPacket packet = new TelemetryPacket();
-            MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
+            Drawing.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
 
             updateAsync(packet);
             drive.updatePoseEstimate();
@@ -464,14 +471,13 @@ public class TeleopActions extends ActionOpMode {
 
             double loopTimeMs = loopTime.milliseconds();
 
-            if (motorControl.isOverCurrent() || true) {
+            if (motorControl.isOverCurrent()) {
                 telemetry.addLine("!!! OVER CURRENT !!!");
                 telemetry.addData("CONTROL HUB CURRENT (A)", CONTROL_HUB.getCurrent(CurrentUnit.AMPS));
                 telemetry.addData("EXPANSION HUB CURRENT (A)", EXPANSION_HUB.getCurrent(CurrentUnit.AMPS));
                 telemetry.addData("ARM CURRENT", motorControl.clawArm.motor.getCurrent(CurrentUnit.AMPS));
                 telemetry.addData("SLIDE CURRENT", motorControl.slide.motor.getCurrent(CurrentUnit.AMPS));
             }
-
 
             if (showPoseTelemetry) {
                 telemetry.addLine("--- Pose ---");
@@ -499,11 +505,14 @@ public class TeleopActions extends ActionOpMode {
             }
             if (showStateTelemetry) {
                 telemetry.addLine("--- State Machine ---");
-                telemetry.addData("stateMachineState", liftState);
                 telemetry.addData("pixelInClaw", pixelInClaw);
                 telemetry.addData("pixelInHook", pixelInHook);
+                telemetry.addData("armState", motorControl.clawArm.currentPreset);
                 telemetry.addData("elapsedTime", liftTimer.milliseconds());
                 telemetry.addData("driveAction", driveActionRunning());
+                telemetry.addData("actions",runningActions);
+                telemetry.addData("suspendMode",suspendSet);
+                telemetry.addData("actionRunning", actionRunning);
             }
             if (showCameraTelemetry) {
                 telemetry.addLine("--- Camera ---");
@@ -519,25 +528,29 @@ public class TeleopActions extends ActionOpMode {
 
         Action pixelToHook () {
             return new ParallelAction(new SequentialAction(
+                    new InstantAction(() -> actionRunning = true),
                     motorActions.pixelToHook(),
                     new InstantAction(() -> {
                         pixelInClaw = false;
                         pixelInHook = true;
-                    })
+                    }),
+                    new InstantAction(() -> actionRunning = false)
             ),
                     new SequentialAction(
                             moveBack3In()
                     ));
         }
-
         Action placePixel (input input){
             return new SequentialAction(
+                    new InstantAction(() -> actionRunning = true),
                     motorActions.hookToBackdrop(),
                     (telemetryPacket -> padRelease()),
                     motorActions.placeSecondPixel(),
                     (telemetryPacket -> padRelease()),
                     motorActions.returnHook(),
-                    new InstantAction(() -> pixelInHook = false)
+                    new InstantAction(() -> pixelInHook = false),
+                    new InstantAction(() -> actionRunning = false)
+
             );
 
         }
@@ -554,9 +567,13 @@ public class TeleopActions extends ActionOpMode {
         }
 
         Action moveBack3In() {
-            return new SequentialAction(new MoveBackAction(),
-                    new SleepAction(1.5),
-                    new StopMovingAction());
+            return new SequentialAction(
+                    new InstantAction(() -> drivingEnabled = false),
+                    new MoveBackAction(),
+                    new SleepAction(0.1),
+                    new StopMovingAction(),
+                    new InstantAction(() -> drivingEnabled = true)
+            );
         }
 
         class MoveBackAction implements Action {

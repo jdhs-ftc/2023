@@ -8,7 +8,6 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.outoftheboxrobotics.photoncore.Photon;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -26,7 +25,7 @@ import org.firstinspires.ftc.teamcode.vision.pipelines.WhitePixelProcessor;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.List;
-@Photon
+
 @TeleOp(name = "OLDTeleop")
 @Disabled
 @Config
@@ -472,7 +471,7 @@ public class OldTeleop extends LinearOpMode {
             // TELEMETRY
 
             TelemetryPacket packet = new TelemetryPacket();
-            MecanumDrive.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
+            Drawing.drawRobot(packet.fieldOverlay(), drive.pose); //new Pose2d(new Vector2d(IN_PER_TICK * drive.pose.trans.x,IN_PER_TICK * drive.pose.trans.y), drive.pose.rot)
             FtcDashboard.getInstance().sendTelemetryPacket(packet);
 
             double loopTimeMs = loopTime.milliseconds();

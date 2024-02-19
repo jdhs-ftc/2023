@@ -30,7 +30,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.experimentsSemiBroken.AprilTagDrive;
-import org.firstinspires.ftc.teamcode.helpers.Helpers;
+import org.firstinspires.ftc.teamcode.helpers.ActionHelpers;
 import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.motor.MotorActions;
 import org.firstinspires.ftc.teamcode.motor.MotorControl;
@@ -89,9 +89,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         MotorActions motorActions = new MotorActions(motorControl);
         // Grab the preloaded pixel with the claw
         Actions.runBlocking(motorActions.claw.grab());
-        // Helps fix slide drifting up issues, sets a really low target pos then reset
-        // Not sure why slide drifts up, could be encoder issue or RTP jank
-        motorControl.slide.setTargetPosition(-100);
+        motorControl.slide.findZero();
 
 
         VisionHelper vision = new VisionHelper(hardwareMap, team());
@@ -181,7 +179,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         {
             case LEFT:
             {
-                Actions.runBlocking(new Helpers.RaceParallelCommand(
+                Actions.runBlocking(new ActionHelpers.RaceParallelCommand(
                         trajLeft,
                         motorActions.update()
                 ));
@@ -190,7 +188,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
 
             case CENTER:
             {
-                Actions.runBlocking(new Helpers.RaceParallelCommand(
+                Actions.runBlocking(new ActionHelpers.RaceParallelCommand(
                         trajCenter,
                         motorActions.update()
                 ));
@@ -200,7 +198,7 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
             case RIGHT:
             {
 
-                Actions.runBlocking(new Helpers.RaceParallelCommand(
+                Actions.runBlocking(new ActionHelpers.RaceParallelCommand(
                         trajRight,
                         motorActions.update()
                 ));

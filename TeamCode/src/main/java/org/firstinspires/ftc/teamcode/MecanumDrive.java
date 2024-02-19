@@ -72,17 +72,17 @@ public class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
         // drive model parameters
-        public double inPerTick = 0.0005451;
-        public double lateralInPerTick = 0.000459754362529135; //0.000427893275;
-        public double trackWidthTicks = 22482.87104190852; //23322.1443182;//48852.1340223;
+        public double inPerTick = 120.0 / 111586.0;//0.0005451;
+        public double lateralInPerTick = 0.0008069055794517306; //0.000459754362529135; //0.000427893275;
+        public double trackWidthTicks = 12080.5; //22482.87104190852; //23322.1443182;//48852.1340223;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.452945804254; //0.70409251729; //0.9812460433137571;
-        public double kV = 0.000107265716; //0.00010510956; //0.185767223337712246
+        public double kS = 0.8759528165431485; //0.452945804254; //0.70409251729; //0.9812460433137571;
+        public double kV = 0.00020992137677729793; //0.000107265716; //0.00010510956; //0.185767223337712246
         public double kA = 0.00001; //0.00001; //increase by like 0.00001; to make the graphs line up
 
         // path profile parameters (in inches)
-        public double maxWheelVel = 20; //50; // prev 40
+        public double maxWheelVel = 40; //40; //50; // prev 40
         public double minProfileAccel = -30;
         public double maxProfileAccel = 30; //50;//30;
 
@@ -219,8 +219,10 @@ public class MecanumDrive {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        //rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
@@ -229,7 +231,7 @@ public class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new TwoDeadWheelLocalizer(hardwareMap,imu, PARAMS.inPerTick);
+        localizer = new TwoDeadWheelLocalizer(hardwareMap,imu.get(), PARAMS.inPerTick);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
@@ -556,10 +558,10 @@ public class MecanumDrive {
             drawPoseHistory(c);
 
             c.setStroke("#4CAF50");
-            drawRobot(c, poseTarget.value());
+            Drawing.drawRobot(c, poseTarget.value());
 
             c.setStroke("#3F51B5");
-            drawRobot(c, pose);
+            Drawing.drawRobot(c, pose);
 
             c.setStroke("#4CAF50FF");
             c.setStrokeWidth(1);
@@ -647,10 +649,10 @@ public class MecanumDrive {
             drawPoseHistory(c);
 
             c.setStroke("#4CAF50");
-            drawRobot(c, poseTarget.value());
+            Drawing.drawRobot(c, poseTarget.value());
 
             c.setStroke("#3F51B5");
-            drawRobot(c, pose);
+            Drawing.drawRobot(c, pose);
 
             c.setStroke("#4CAF50FF");
             c.setStrokeWidth(1);

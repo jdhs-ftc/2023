@@ -29,7 +29,7 @@ public abstract class ActionOpMode extends LinearOpMode {
     }
 
     protected void updateAsync(TelemetryPacket packet) {
-        
+
         // update running actions
         List<Action> newActions = new ArrayList<>();
         for (Action action : runningActions) {
@@ -38,6 +38,7 @@ public abstract class ActionOpMode extends LinearOpMode {
                 newActions.add(action);
             }
         }
+        System.out.println(runningActions.toString() + newActions.toString() + "12087");
         runningActions = newActions;
     }
 

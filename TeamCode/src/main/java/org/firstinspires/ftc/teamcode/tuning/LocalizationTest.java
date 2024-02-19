@@ -75,7 +75,7 @@ public class LocalizationTest extends LinearOpMode {
                     telemetry.addData("tagRelPosY", tag.ftcPose.y);
                     telemetry.addData("tagRelBearing", tag.ftcPose.bearing);
                 }
-                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
 
                 telemetry.update();
 

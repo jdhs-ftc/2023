@@ -43,6 +43,7 @@ public class MotorActions {
                 clawArm.moveHook(),
                 clawArm.waitUntilFinished(),
                 claw.release(),
+                seperator.hold(),
                 clawArm.moveDown(),
                 clawArm.waitUntilFinished()
         );
@@ -69,7 +70,8 @@ public class MotorActions {
     public Action placeSecondPixel() {
         return new SequentialAction(
                 hook.seperatePos(),
-                new SleepAction(0.3),
+                new SleepAction(0.5),
+                seperator.release(),
                 hook.raise(),
                 seperator.release()
         );
@@ -158,7 +160,7 @@ public class MotorActions {
         }
 
         public Action moveUp() {
-            return setTargetPosition(1100);
+            return setTargetPosition(1200);
         }
         public Action moveDown() {
             return setTargetPosition(40);
@@ -200,7 +202,7 @@ public class MotorActions {
             return new Action() {
                 @Override
                 public boolean run(@NonNull TelemetryPacket t) {
-                    motorControl.hookArm.setPosition(0.6); // TODO TUNE
+                    motorControl.hookArm.setPosition(0.7); // TODO TUNE
                     return false;
                 }
             };
@@ -210,15 +212,15 @@ public class MotorActions {
     public class AutoPlacer {
         public Action place() {
             return new SequentialAction(
-                    telemetryPacket -> {motorControl.autoPlacer.setPosition(0.5); return false;},
-                    new SleepAction(0.5),
+                    telemetryPacket -> {motorControl.autoPlacer.setPosition(0.3); return false;},
+                    new SleepAction(0.75),
                     telemetryPacket -> {motorControl.autoPlacer.setPosition(1); return false;});
         }
     }
 
     public class Seperator {
         public Action hold() {
-            return new InstantAction(() -> motorControl.seperator.setPosition(0.5)); // TODO TUNE
+            return new InstantAction(() -> motorControl.seperator.setPosition(0.25)); // TODO TUNE
         }
         public Action release() {
             return new InstantAction(() -> motorControl.seperator.setPosition(0));

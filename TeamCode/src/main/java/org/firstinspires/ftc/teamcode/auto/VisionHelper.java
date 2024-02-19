@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.PtzControl;
 import org.firstinspires.ftc.teamcode.helpers.PoseStorage;
 import org.firstinspires.ftc.teamcode.helpers.vision.CameraStreamProcessor;
 import org.firstinspires.ftc.teamcode.helpers.vision.PipelineProcessor;
@@ -27,7 +28,11 @@ public class VisionHelper {
     WebcamName frontCam;
     VisionPortal myVisionPortal;
     public boolean frontCamActive = false;
+   PtzControl.PanTiltHolder backCamPtz = new PtzControl.PanTiltHolder();
+   PtzControl.PanTiltHolder frontCamPtz = new PtzControl.PanTiltHolder();
     public VisionHelper(HardwareMap hardwareMap, PoseStorage.Team team) {
+        backCamPtz.tilt = 0;
+        frontCamPtz.tilt = 180;
 
         // Initialize prop detector
         pipeline = new TeamPropDeterminationPipeline();
@@ -52,6 +57,7 @@ public class VisionHelper {
         frontCam = hardwareMap.get(WebcamName.class, "Webcam 2");
 
 
+
         myVisionPortal = new VisionPortal.Builder()
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .setCameraResolution(new Size(640,480))
@@ -60,6 +66,7 @@ public class VisionHelper {
                 .addProcessors(aprilTagBack, aprilTagFront, pipelineProcessor, cameraStreamProcessor)
                 .enableLiveView(true)
                 .build();
+
 
 
         FtcDashboard.getInstance().startCameraStream(cameraStreamProcessor,30);
