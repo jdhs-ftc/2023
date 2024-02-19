@@ -21,9 +21,6 @@
 
 package org.firstinspires.ftc.teamcode.auto;
 
-import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION;
-import static com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER;
-
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -169,9 +166,12 @@ public abstract class AbstractVisionOpMode extends LinearOpMode
         telemetry.update();
 
         // Reset slide to fix issue as mentioned earlier
+        /*
         motorControl.slide.motor.setMode(STOP_AND_RESET_ENCODER);
         motorControl.slide.motor.setMode(RUN_TO_POSITION);
         motorControl.activatePreset(MotorControl.combinedPreset.IDLE);
+
+         */
 
         // Here we use the selection from the vision to select the right trajectory
         // Then we use RaceParallelCommand to run both the trajectory and our motor updating until the trajectory ends
