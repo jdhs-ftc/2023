@@ -266,7 +266,7 @@ public class TeleopActions extends ActionOpMode {
             if (drivingEnabled) {
                 // check if the right stick is pushed to the edge
                 // this if statement is backwards; if true, it's not pushed drive normal
-                if (Math.sqrt(Math.pow(controllerHeading.x, 2.0) + Math.pow(controllerHeading.y, 2.0)) < 0.4) {
+                if (Math.sqrt(Math.pow(controllerHeading.x, 2.0) + Math.pow(controllerHeading.y, 2.0)) < 0.4) { //TODO: trigggers still turn, but PID hold heading unless turning
                     drive.setDrivePowers(
                             new PoseVelocity2d(
                                     new Vector2d(

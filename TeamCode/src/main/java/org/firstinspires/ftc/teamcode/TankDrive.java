@@ -48,7 +48,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
 import org.firstinspires.ftc.teamcode.messages.TankCommandMessage;
-import org.firstinspires.ftc.teamcode.messages.TankEncodersMessage;
+import org.firstinspires.ftc.teamcode.messages.TankLocalizerInputsMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,7 +112,7 @@ public final class TankDrive {
 
     public final List<DcMotorEx> leftMotors, rightMotors;
 
-    public final LazyImu imu;
+    public final LazyImu lazyImu;
 
     public final VoltageSensor voltageSensor;
 
@@ -131,6 +131,7 @@ public final class TankDrive {
         public final List<Encoder> leftEncs, rightEncs;
 
         private double lastLeftPos, lastRightPos;
+        private boolean initialized;
 
         public DriveLocalizer() {
             {
@@ -153,16 +154,6 @@ public final class TankDrive {
 
             // TODO: reverse encoder directions if needed
             //   leftEncs.get(0).setDirection(DcMotorSimple.Direction.REVERSE);
-
-            for (Encoder e : leftEncs) {
-                lastLeftPos += e.getPositionAndVelocity().position;
-            }
-            lastLeftPos /= leftEncs.size();
-
-            for (Encoder e : rightEncs) {
-                lastRightPos += e.getPositionAndVelocity().position;
-            }
-            lastRightPos /= rightEncs.size();
         }
 
         @Override
@@ -188,8 +179,20 @@ public final class TankDrive {
             meanRightPos /= rightEncs.size();
             meanRightVel /= rightEncs.size();
 
-            FlightRecorder.write("TANK_ENCODERS",
-                    new TankEncodersMessage(leftReadings, rightReadings));
+            FlightRecorder.write("TANK_LOCALIZER_INPUTS",
+                     new TankLocalizerInputsMessage(leftReadings, rightReadings));
+
+            if (!initialized) {
+                initialized = true;
+
+                lastLeftPos = meanLeftPos;
+                lastRightPos = meanRightPos;
+
+                return new Twist2dDual<>(
+                        Vector2dDual.constant(new Vector2d(0.0, 0.0), 2),
+                        DualNum.constant(0.0, 2)
+                );
+            }
 
             TankKinematics.WheelIncrements<Time> twist = new TankKinematics.WheelIncrements<>(
                     new DualNum<Time>(new double[] {
@@ -236,7 +239,7 @@ public final class TankDrive {
 
         // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        imu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
+        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
