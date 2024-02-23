@@ -124,13 +124,12 @@ public class AprilTagDrive extends MecanumDrive {
             // if we can see tags, we use the apriltag position
             // however apriltags don't have accurate headings so we use the localizer heading
             // localizer heading, for us and in TwoDeadWheelLocalizer, is IMU and absolute-ish
-            aprilPose = new Pose2d(aprilVector, localizerPose.heading);
             // TODO: apriltags unreliable at higher speeds? speed limit? global shutter cam? https://discord.com/channels/225450307654647808/225451520911605765/1164034719369941023
 
             // we input the change from odometry with the april absolute pose into the kalman filter
             filteredVector = posFilter.update(twist.value(), aprilVector);
             // then we add the kalman filtered position to the localizer heading as a pose
-            pose = new Pose2d(aprilVector, localizerPose.heading);
+            pose = new Pose2d(aprilVector, localizerPose.heading); // TODO: aprilVector should be filteredVector to use kalman filter (kalman filter is untested)
             shouldTagCorrect = false; // TODO disable
         } else {
             // if we can't see tags, we use the localizer position to update the kalman fiter
