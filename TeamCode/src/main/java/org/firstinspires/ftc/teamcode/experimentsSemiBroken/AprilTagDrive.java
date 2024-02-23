@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.experimentsSemiBroken;
 
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -33,8 +34,9 @@ import java.util.List;
  *
  * NOTE: I PLAN TO CREATE A CLEANED UP VERSION OF THIS TO DISTRIBUTE, this has some weird specific-to-my-codebase stuff
  * also, TODO: get rid of the kalman filter, vision helper, and multi cam
- * <p>
- * We use a Kalman Filter to interpolate between the existing localizer and the AprilTags.
+ *
+ * Released under the BSD 3-Clause Clear License by j5155 from 12087 Capital City Dynamics
+ * Portions of this code made and released under the BSD 3-Clause Clear License by Michael from 14343 and by Ryan Brott
  */
 public class AprilTagDrive extends MecanumDrive {
     @Config
