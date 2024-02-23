@@ -30,6 +30,9 @@ import java.util.List;
 
 /**
  * Experimental extension of MecanumDrive that uses AprilTags for relocalization.
+ *
+ * NOTE: I PLAN TO CREATE A CLEANED UP VERSION OF THIS TO DISTRIBUTE, this has some weird specific-to-my-codebase stuff
+ * also, TODO: get rid of the kalman filter, vision helper, and multi cam
  * <p>
  * We use a Kalman Filter to interpolate between the existing localizer and the AprilTags.
  */
@@ -41,6 +44,7 @@ public class AprilTagDrive extends MecanumDrive {
         static Vector2d camera1Offset = new Vector2d(
                 -6,
                 4);
+        // if you don't have a second camera this doesn't matter
         static Vector2d camera2Offset = new Vector2d(
                 0,
                 -5);//6);
@@ -67,6 +71,12 @@ public class AprilTagDrive extends MecanumDrive {
     public VisionHelper vHelper = null;
     boolean frontCamActive = true;
     boolean backCamActive = true;
+    /**
+     * Init with just one camera; use instead of MecanumDrive
+     * @param hardwareMap the hardware map
+     * @param pose the starting pose
+     * @param aprilTagBack your camera's AprilTagProcessor
+     */
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTagBack) {
         super(hardwareMap, pose);
         this.aprilTagBack = aprilTagBack;
@@ -74,13 +84,21 @@ public class AprilTagDrive extends MecanumDrive {
         this.cameraOffset = Params.camera1Offset;
 
     }
-
+    /**
+     * Init with two cameras; use instead of MecanumDrive
+     * @param hardwareMap the hardware map
+     * @param pose the starting pose
+     * @param aprilTagBack back camera's apriltag processor
+     * @param aprilTagFront your second camera's AprilTagProcessor
+     */
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, AprilTagProcessor aprilTagBack, AprilTagProcessor aprilTagFront) {
         super(hardwareMap, pose);
         this.aprilTagBack = aprilTagBack;
         this.aprilTagFront = aprilTagFront;
         this.posFilter = new KalmanFilter.Vector2dKalmanFilter(PARAMS.kalmanFilterQ, PARAMS.kalmanFilterR);
     }
+    // VisionHelper is my helper class for switching between multiple cameras due to USB hub limitations
+    // you can rip out all references to it if you want, you probably don't need it
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose, VisionHelper vHelper) {
         super(hardwareMap, pose);
         this.aprilTagBack = vHelper.aprilTagBack;
@@ -200,6 +218,8 @@ public class AprilTagDrive extends MecanumDrive {
         return averagePos.div(realDetections);
     }
 
+    // this is my original rotator code
+    // it doesn't work lol
     @NonNull
     private static Vector2d calculateRobotPosFromTag(Vector2d tagPos, double tagHeading, double imuHeading, AprilTagDetection detection) {
         // TODO: I don't actually know trig, this is probably terrible
@@ -219,6 +239,8 @@ public class AprilTagDrive extends MecanumDrive {
 
         return new Vector2d(xPos, yPos);
     }
+
+    // getFCPosition credit Michael from team 14343 (@overkil on Discord)
     /**
      * @param botheading In Radians.
      * @return FC Pose of bot.
@@ -268,7 +290,7 @@ public class AprilTagDrive extends MecanumDrive {
             }
         };
     }
-
+    // this position library credit Michael from team 14343 (@overkil on Discord)
     public static AprilTagLibrary getCenterStageTagLibrary()
     {
         return new AprilTagLibrary.Builder()
