@@ -44,6 +44,7 @@ public class TeleopActions extends ActionOpMode {
     private final PIDFController.PIDCoefficients PIXEL_PID_JOYSTICK = new PIDFController.PIDCoefficients(0.004, 0.0, 0.0);
     private final PIDFController pixelHeadingController = new PIDFController(PIXEL_PID_JOYSTICK);
     double speed;
+    Rotation2d targetHeading;
     LynxModule CONTROL_HUB;
     LynxModule EXPANSION_HUB;
     boolean fieldCentric = true;
@@ -64,7 +65,6 @@ public class TeleopActions extends ActionOpMode {
     boolean showMotorTelemetry = true;
     boolean showStateTelemetry = true;
     boolean showLoopTimes = true;
-    boolean showTelemetryMenu = false;
     boolean showPoseTelemetry = true;
     boolean showCameraTelemetry = false;
 
@@ -197,7 +197,7 @@ public class TeleopActions extends ActionOpMode {
             } else if (padFastMode) {
                 speed = 1.5;
             } else {
-                speed = .8; // prev 0.8
+                speed = 0.3;//.8; // prev 0.8
             }
             // especially in driver practice, imu drifts eventually
             // this lets them reset just in case
@@ -207,6 +207,7 @@ public class TeleopActions extends ActionOpMode {
                 } else {
                     drive.pose = new Pose2d(drive.pose.position.x, drive.pose.position.y, Math.toRadians(-90.0));
                 }
+                targetHeading = drive.pose.heading;
                 gamepad1.rumbleBlips(1); // tell the driver it succeeded
             }
             // Second layer
@@ -252,7 +253,7 @@ public class TeleopActions extends ActionOpMode {
                     rotationAmount = rotationAmount + Math.toRadians(90);
 
                 }
-                input = Rotation2d.fromDouble(rotationAmount).times(new Vector2d(input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
+                input = drive.pose.heading.inverse().times(new Vector2d(input.x, input.y)); // magic courtesy of https://github.com/acmerobotics/road-runner/issues/90#issuecomment-1722674965
             }
             Vector2d controllerHeading = new Vector2d(-gamepad1.right_stick_y, -gamepad1.right_stick_x);
 
@@ -264,9 +265,7 @@ public class TeleopActions extends ActionOpMode {
                 ));
             }
             if (drivingEnabled) {
-                // check if the right stick is pushed to the edge
-                // this if statement is backwards; if true, it's not pushed drive normal
-                if (Math.sqrt(Math.pow(controllerHeading.x, 2.0) + Math.pow(controllerHeading.y, 2.0)) < 0.4) { //TODO: trigggers still turn, but PID hold heading unless turning
+                if (gamepad1.left_trigger > 0.1 || gamepad1.right_trigger > 0.1) { //TODO: trigggers still turn, but PID hold heading unless turning
                     drive.setDrivePowers(
                             new PoseVelocity2d(
                                     new Vector2d(
@@ -276,15 +275,19 @@ public class TeleopActions extends ActionOpMode {
                                     (gamepad1.left_trigger - gamepad1.right_trigger) * speed
                             )
                     );
+                    targetHeading = drive.pose.heading;
                 } else { // right stick is pushed
                     // Set the target heading for the heading controller to our desired angle
-
-                    // Cast the angle based on the angleCast of the joystick as a heading
-                    if (PoseStorage.currentTeam == PoseStorage.Team.BLUE) {
-                        joystickHeadingController.targetPosition = controllerHeading.angleCast().log() + Math.toRadians(-90);
-                    } else {
-                        joystickHeadingController.targetPosition = controllerHeading.angleCast().log() + Math.toRadians(90);
+                    if (Math.sqrt(Math.pow(controllerHeading.x, 2.0) + Math.pow(controllerHeading.y, 2.0)) < 0.4) {
+                        // Cast the angle based on the angleCast of the joystick as a heading
+                        if (PoseStorage.currentTeam == PoseStorage.Team.BLUE) {
+                            targetHeading = controllerHeading.angleCast().plus(Math.toRadians(-90));
+                        } else {
+                            targetHeading = controllerHeading.angleCast().plus(Math.toRadians(90));
+                        }
                     }
+
+                    joystickHeadingController.targetPosition = targetHeading.toDouble();
 
 
                     // Set desired angular velocity to the heading controller output + angular
@@ -303,25 +306,6 @@ public class TeleopActions extends ActionOpMode {
                     );
 
                 }
-                // auto aim stuff; not really tested
-                if (padCameraAutoAim && whitePixelProcessor.getDetectedPixel() != null) {
-                    double x = whitePixelProcessor.getDetectedPixel().x;
-                    double y = whitePixelProcessor.getDetectedPixel().y;
-                    pixelHeadingController.targetPosition = 200; // pixel aligned with claw
-
-                    // Set desired angular velocity to the heading controller output + angular
-                    // velocity feedforward
-                    double headingInput = (pixelHeadingController.update(x) * (y / 320));
-                    drive.setDrivePowers(
-                            new PoseVelocity2d(
-                                    new Vector2d(
-                                            input.x,
-                                            headingInput
-                                    ),
-                                    (gamepad1.left_trigger - gamepad1.right_trigger) * speed
-                            )
-                    );
-                }
             }
 
 
@@ -339,22 +323,9 @@ public class TeleopActions extends ActionOpMode {
                 motorControl.slide.setTargetPosition(motorControl.slide.getTargetPosition() + (padSlideControl * padSlideControlMultiplier));
             }
 
-            // Arm (Manual)
-            // Slide (Manual)
-            /*
-            if (motorControl.clawArm.getTargetPosition() > 130 && padArmControl > 0) {
-                motorControl.clawArm.setTargetPosition(130);
-
-            } else if (motorControl.clawArm.getTargetPosition() <= 0 - (padArmControl * padArmControlMultiplier)  && padArmControl < 0 && !padForceDown) {
-                motorControl.clawArm.setTargetPosition(0.1);
-
-            } else { motorControl.clawArm.setTargetPosition(motorControl.clawArm.getTargetPosition() + (padArmControl * padArmControlMultiplier));}
-
-             */
 
             motorControl.suspend.setPower(padSuspendControl * padSuspendControlMultiplier);
 
-            // THE FULL STATE MACHINE
 
             if (pixelInClaw && padHalfCycle && motorControl.slide.motor.getCurrentPosition() < 850 && !actionRunning) {
                 run(pixelToHook());
