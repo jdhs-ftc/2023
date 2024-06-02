@@ -207,6 +207,15 @@ public class MotorActions {
                 }
             };
         }
+        public Action goToPos(double pos){
+            return new Action() {
+                @Override
+                public boolean run(@NonNull TelemetryPacket t) {
+                    motorControl.hookArm.setPosition(pos);
+                    return false;
+                }
+            };
+        }
     }
 
     public class AutoPlacer {

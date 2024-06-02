@@ -691,6 +691,7 @@ public class MecanumDrive {
             c.strokePolyline(xPoints, yPoints);
         }
     }
+    /*
     public final class ToPointAction implements Action {
         public final Pose2d targetPose;
         private double beginTs = -1;
@@ -723,17 +724,24 @@ public class MecanumDrive {
 
                 return false;
             }
-            Pose2dDual<Time> zero = new Pose2dDual<Time>(new DualNum<Time>(Collections.singletonList(0.0)),new DualNum<Time>(Collections.singletonList(0.0)),new DualNum<Time>(Collections.singletonList(0.0)));
-            Pose2dDual<Time> txWorldTarget = zero.plus(targetPose.log());
+            Pose2dDual<Time> txWorldTarget = Pose2dDual.constant(targetPose, 2);
             targetPoseWriter.write(new PoseMessage(txWorldTarget.value()));
 
             PoseVelocity2d robotVelRobot = updatePoseEstimate();
 
-            PoseVelocity2dDual<Time> command = new HolonomicController(
+            PoseVelocity2dDual<Time> command1 = new HolonomicController(
                     PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain,
                     PARAMS.axialVelGain, PARAMS.lateralVelGain, PARAMS.headingVelGain
             )
                     .compute(txWorldTarget, pose, robotVelRobot);
+            Pose2dDual<Time> txTargetWorld = Pose2dDual.constant(targetPose.inverse(), 2);
+
+            Pose2d error = targetPose.minusExp(pose);
+            PoseVelocity2d command = new PoseVelocity2d(
+                    new Vector2d(
+                            PARAMS.axialGain * error.position.x,
+                            PARAMS.lateralGain * error.position.y),
+                    PARAMS.headingGain * error.heading.log());
             driveCommandWriter.write(new DriveCommandMessage(command));
 
             MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(command);
@@ -785,6 +793,8 @@ public class MecanumDrive {
             c.fillCircle(targetPose.position.x, targetPose.position.y, 2);
         }
     }
+
+     */
 
 
 
